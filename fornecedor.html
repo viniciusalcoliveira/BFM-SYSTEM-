@@ -1,0 +1,1200 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cadastro de Fornecedores - BFM Frotas</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f0f4f8; /* Light background for a clean look */
+            color: #2c3e50; /* Darker text for readability */
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased; /* Smoother font rendering */
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* Custom animation for dropdown fade-in (downwards) */
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in-down {
+            animation: fadeInDown 0.3s ease-out forwards;
+            transform-origin: top;
+        }
+
+        /* Custom animation for submenu fade-in (sideways) */
+        @keyframes fadeInRight {
+            from { opacity: 0; transform: translateX(-10px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        .animate-fade-in-right {
+            animation: fadeInRight 0.3s ease-out forwards;
+            transform-origin: left;
+        }
+
+        /* Custom scrollbar styling for a consistent look */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background-color: rgb(20, 139, 36); /* Semi-transparent primary green */
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(26, 77, 62, 0.1); /* Lighter track */
+        }
+
+        /* Base dropdown item styling */
+        .dropdown-item {
+            padding: 0.75rem 1.5rem;
+            color: #374151; /* gray-700 */
+            font-weight: 500;
+            white-space: nowrap;
+            display: block; /* Ensure it takes full width */
+            width: 100%;
+            text-align: left;
+            transition: background-color 0.2s ease, color 0.2s ease;
+        }
+
+        .dropdown-item:hover {
+            background-color: #e0f2f7; /* lighter blue/greenish hue for hover */
+            color: #1e7e15; /* primary green for hover text */
+        }
+
+        /* Specific styling for nested submenu trigger buttons */
+        .submenu-trigger {
+            width: 100%;
+            text-align: left;
+            padding: 0.75rem 1.5rem;
+            color: #374151;
+            font-weight: 500;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: transparent; /* Reset button default bg */
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.2s ease, color 0.2s ease;
+        }
+
+        .submenu-trigger:hover {
+            background-color: #e0f2f7;
+            color: #0da326;
+        }
+
+        /* Styles for dropdown content (main menus) */
+        .dropdown-content {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* shadow-xl */
+        }
+
+        /* Styles for submenu content (nested menus) */
+        .submenu-content {
+            position: absolute;
+            top: 0;
+            left: 100%; /* Opens to the right */
+            min-width: 220px;
+            background-color: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            z-index: 10000; /* Ensure it's above other elements */
+            display: flex;
+            flex-direction: column;
+            border-left: 1px solid #e2e8f0; /* Small border for visual separation */
+        }
+
+        /* Adjust caret rotation for main dropdowns */
+        .ph-caret-down {
+            transition: transform 0.2s ease-in-out;
+        }
+        .menu-link[aria-expanded="true"] .ph-caret-down {
+            transform: rotate(180deg); /* Rotates up when open */
+        }
+
+        /* Adjust caret rotation for submenus */
+        .ph-caret-right {
+            transition: transform 0.2s ease-in-out;
+        }
+        .submenu-trigger[aria-expanded="true"] .ph-caret-right {
+            transform: rotate(90deg); /* Rotates down when open (if opening right) */
+        }
+
+        /* Active menu styling */
+        .active-menu {
+            color: #facc15 !important; /* yellow-300 */
+            border-bottom: 4px solid #facc15 !important; /* yellow-300 */
+        }
+
+        /* Responsive adjustments for mobile */
+        @media (max-width: 767px) { /* Tailind's md breakpoint is 768px */
+            .md\:flex-row {
+                flex-direction: column;
+            }
+            .md\:mb-0 {
+                margin-bottom: 1rem; /* Adjust margin for mobile brand */
+            }
+            .nav {
+                width: 100%;
+                flex-direction: column;
+                align-items: flex-start;
+                padding-top: 1rem;
+            }
+            .menu-link, .dropdown > button {
+                width: 100%;
+                text-align: left;
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+
+            /* Main dropdowns revert to full width and relative positioning for mobile */
+            .dropdown-content {
+                position: static !important; /* Override absolute for mobile */
+                width: 100%;
+                border-radius: 0;
+                box-shadow: none;
+                border-top: 1px solid #e2e8f0; /* Add a subtle divider */
+                padding-left: 1rem; /* Indent dropdown items */
+            }
+            /* Submenus also revert to full width and static positioning for mobile */
+            .submenu-content {
+                position: static !important; /* Override absolute for mobile */
+                width: 100%;
+                border-radius: 0;
+                box-shadow: none;
+                border-left: none; /* Remove left border */
+                border-top: 1px solid #e2e8f0; /* Add a subtle divider */
+                padding-left: 2rem; /* Further indent nested items */
+            }
+
+            .ph-caret-down, .ph-caret-right {
+                transform: rotate(0deg) !important; /* Reset rotation for mobile */
+            }
+            .menu-link[aria-expanded="true"] .ph-caret-down,
+            .submenu-trigger[aria-expanded="true"] .ph-caret-right {
+                transform: rotate(180deg) !important; /* Still rotate down for consistency in mobile dropdowns */
+            }
+        }
+
+        /* Form styling */
+        .form-container {
+            background-color: #ffffff;
+            padding: 2.5rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #334155; /* slate-700 */
+        }
+
+        .form-group input[type="text"],
+        .form-group input[type="number"],
+        .form-group input[type="email"],
+        .form-group input[type="tel"],
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid #cbd5e1; /* slate-300 */
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            color: #475569; /* slate-700 */
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .form-group input[type="text"]:focus,
+        .form-group input[type="number"]:focus,
+        .form-group input[type="email"]:focus,
+        .form-group input[type="tel"]:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #16a34a; /* green-600 */
+            box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.2); /* green-600 with opacity */
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+        }
+
+        .radio-group div {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .radio-group input[type="radio"] {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            width: 1.25rem;
+            height: 1.25rem;
+            border: 2px solid #94a3b8; /* slate-400 */
+            border-radius: 50%;
+            outline: none;
+            cursor: pointer;
+            position: relative;
+            transition: border-color 0.2s ease;
+        }
+
+        .radio-group input[type="radio"]:checked {
+            border-color: #16a34a; /* green-600 */
+        }
+
+        .radio-group input[type="radio"]:checked::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 0.75rem;
+            height: 0.75rem;
+            background-color: #16a34a; /* green-600 */
+            border-radius: 50%;
+        }
+
+        .radio-group label {
+            margin-bottom: 0;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-top: 1.5rem;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            width: 1.25rem;
+            height: 1.25rem;
+            border: 2px solid #94a3b8; /* slate-400 */
+            border-radius: 0.375rem; /* rounded-md */
+            outline: none;
+            cursor: pointer;
+            position: relative;
+            transition: background-color 0.2s ease, border-color 0.2s ease;
+        }
+
+        .checkbox-group input[type="checkbox"]:checked {
+            background-color: #16a34a; /* green-600 */
+            border-color: #16a34a; /* green-600 */
+        }
+
+        .checkbox-group input[type="checkbox"]:checked::after {
+            content: '\2713'; /* Checkmark character */
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 0.875rem; /* text-sm */
+            font-weight: bold;
+        }
+
+        .checkbox-group label {
+            margin-bottom: 0;
+            cursor: pointer;
+            font-weight: 500;
+            color: #334155;
+        }
+
+        .btn-submit {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            width: 100%;
+            padding: 1rem 1.5rem;
+            background-color: #16a34a; /* green-600 */
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 1.125rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background-color 0.2s ease, transform 0.1s ease;
+            margin-top: 2rem;
+        }
+
+        .btn-submit:hover {
+            background-color: #15803d; /* green-700 */
+            transform: translateY(-1px);
+        }
+
+        .btn-submit:active {
+            transform: translateY(0);
+        }
+
+        .checklist-items-container {
+            border: 1px solid #e2e8f0; /* slate-200 */
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            background-color: #f8fafc; /* slate-50 */
+            margin-bottom: 1.5rem;
+        }
+
+        .checklist-item {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* Adjusted minmax for more fields */
+            gap: 1rem 1.5rem; /* Row gap, column gap */
+            align-items: flex-end;
+            border-bottom: 1px dashed #cbd5e1; /* slate-300 */
+            padding-bottom: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .checklist-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .checklist-item .form-group {
+            margin-bottom: 0; /* Remove bottom margin for groups within checklist items */
+        }
+
+        .btn-add-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background-color: #3b82f6; /* blue-500 */
+            color: white;
+            padding: 0.75rem 1.25rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            margin-bottom: 1.5rem;
+            border: none;
+        }
+
+        .btn-add-item:hover {
+            background-color: #2563eb; /* blue-600 */
+        }
+
+        .btn-remove-item {
+            background-color: #ef4444; /* red-500 */
+            color: white;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            border: none;
+            width: fit-content;
+            justify-self: end; /* Align to the end of its grid column */
+            white-space: nowrap;
+        }
+
+        .btn-remove-item:hover {
+            background-color: #dc2626; /* red-600 */
+        }
+
+        @media (max-width: 768px) {
+            .checklist-item {
+                grid-template-columns: 1fr;
+            }
+            .btn-remove-item {
+                width: 100%;
+                justify-self: stretch;
+            }
+        }
+
+        /* Plan List Section */
+        .plan-list-container {
+            background-color: #ffffff;
+            padding: 2.5rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            margin-top: 3rem;
+        }
+        .plan-list-item {
+            display: flex;
+            flex-direction: column;
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        .plan-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 0.5rem 1rem;
+            flex-grow: 1;
+        }
+        .plan-details span {
+            font-weight: 500;
+            color: #475569;
+        }
+        .plan-details strong {
+            color: #1e293b;
+        }
+        .plan-details .text-green-700 {
+            font-weight: 600;
+        }
+        
+        .btn-integrate-api {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background-color: #22c55e; /* green-500 */
+            color: white;
+            padding: 0.75rem 1.25rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            margin-top: 1rem;
+            border: none;
+        }
+
+        .btn-integrate-api:hover {
+            background-color: #16a34a; /* green-600 */
+        }
+
+        /* Modal Specific Styles */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10001; /* Above other elements */
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .modal.open {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background-color: #ffffff;
+            padding: 2.5rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            width: 90%;
+            max-width: 800px; /* Adjust max width for content */
+            max-height: 90vh; /* Limit height to prevent overflow */
+            overflow-y: auto; /* Enable scrolling for long forms */
+            position: relative;
+            transform: translateY(-20px);
+            transition: transform 0.3s ease;
+        }
+        
+        .modal.open .modal-content {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 1rem;
+        }
+
+        .modal-header h2 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #16a34a;
+        }
+
+        .modal-close-button {
+            background: none;
+            border: none;
+            font-size: 2rem;
+            cursor: pointer;
+            color: #64748b; /* slate-500 */
+            transition: color 0.2s ease;
+        }
+
+        .modal-close-button:hover {
+            color: #334155; /* slate-700 */
+        }
+
+        .modal-checklist-container {
+            border: 1px solid #e2e8f0;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            background-color: #f8fafc;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-checklist-item {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem 1.5rem;
+            align-items: flex-end;
+            border-bottom: 1px dashed #cbd5e1;
+            padding-bottom: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-checklist-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        .modal-checklist-item .form-group {
+            margin-bottom: 0;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-top: 2rem;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 1.5rem;
+        }
+
+        .btn-cancel {
+            background-color: #64748b; /* slate-500 */
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            border: none;
+        }
+
+        .btn-cancel:hover {
+            background-color: #475569; /* slate-700 */
+        }
+
+        .btn-save-modal {
+            background-color: #16a34a; /* green-600 */
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            border: none;
+        }
+
+        .btn-save-modal:hover {
+            background-color: #15803d; /* green-700 */
+        }
+
+        /* Feedback Message */
+        .feedback-message {
+            position: fixed;
+            bottom: 1rem;
+            right: 1rem;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            color: white;
+            font-weight: 600;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            z-index: 10002;
+        }
+
+        .feedback-message.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .feedback-message.success {
+            background-color: #16a34a; /* green-600 */
+        }
+
+        .feedback-message.error {
+            background-color: #ef4444; /* red-500 */
+        }
+    </style>
+</head>
+<body class="overflow-x-hidden">
+
+    <header class="bg-green-700 text-white p-4 flex flex-col md:flex-row items-center justify-between shadow-lg sticky top-0 z-50 rounded-b-xl">
+    <div class="font-extrabold text-3xl tracking-wider select-none mb-4 md:mb-0" tabindex="0">
+        <span class="text-white">BFM</span><span class="text-yellow-300"> FROTAS</span>
+    </div>
+
+    <nav class="flex flex-wrap gap-x-4 gap-y-2 items-center justify-center" role="navigation" aria-label="Menu principal">
+        <a href="dashboard.html" class="menu-link text-white font-semibold text-base py-2 px-2 relative whitespace-nowrap border-b-4 border-transparent hover:text-yellow-300 hover:border-yellow-300 transition">
+            Dashboard
+        </a>
+        <div class="relative dropdown" id="dropdown-configuracoes">
+            <button class="menu-link text-white font-semibold text-base py-2 px-2 active-menu hover:text-yellow-300 hover:border-yellow-300 border-b-4 border-transparent transition flex items-center gap-1" type="button" aria-haspopup="true" aria-expanded="false">
+                Configurações
+                <i class="ph ph-caret-down ml-1"></i>
+            </button>
+            <div id="menu-configuracoes" class="dropdown-content hidden absolute top-full left-0 bg-white rounded-xl shadow-xl min-w-[220px] z-[9999] flex-col">
+                <div class="relative group" id="dropdown-veiculos-submenu">
+                    <button class="submenu-trigger" type="button" aria-haspopup="true" aria-expanded="false">
+                        Veículos
+                        <i class="ph ph-caret-right ml-2"></i>
+                    </button>
+                    <div id="menu-veiculos-submenu" class="submenu-content hidden">
+                        <a href="cadastroveiculos.html" class="dropdown-item">Cadastro de Veículos</a>
+                        <a href="cadastro_combustivel.html" class="dropdown-item">Cadastro de Combustível</a>
+                        <a href="cadastro_marcas.html" class="dropdown-item">Cadastro de Marcas</a>
+                        <a href="cadastro_modelo.html" class="dropdown-item">Cadastro de Modelo</a>
+                        <a href="anexosdocumentos.html" class="dropdown-item">Anexar Documento</a>
+                    </div>
+                </div>
+                <div class="relative group" id="dropdown-servicos-submenu">
+                    <button class="submenu-trigger" type="button" aria-haspopup="true" aria-expanded="false">
+                        Serviços
+                        <i class="ph ph-caret-right ml-2"></i>
+                    </button>
+                    <div id="menu-servicos-submenu" class="submenu-content hidden">
+                        <a href="cadastro-compartimentos.html" class="dropdown-item">Cadastro de Compartimentos</a>
+                        <a href="cadastro_acoes.html" class="dropdown-item">Cadastro de Ações</a>
+                    </div>
+                </div>
+                <a href="cadastro_tecnicos.html" class="dropdown-item">Cadastro de Técnicos</a>
+                <a href="fornecedor.html" class="dropdown-item">Cadastro de Fornecedores</a>
+                <a href="cadastro_periodicidade.html" class="dropdown-item">Cadastro de Periodicidade</a>
+                <a href="oficinas.html" class="dropdown-item">Cadastro de Oficina</a>
+                <a href="controlehodometrohorimetro.html" class="dropdown-item">Controle de Hodômetro/Horímetro</a>
+            </div>
+        </div>
+        <div class="relative dropdown" id="dropdown-plano">
+            <button class="menu-link text-white font-semibold text-base py-2 px-2 hover:text-yellow-300 hover:border-yellow-300 border-b-4 border-transparent transition flex items-center gap-1" type="button" aria-haspopup="true" aria-expanded="false">
+                Plano de Manutenção
+                <i class="ph ph-caret-down ml-1"></i>
+            </button>
+            <div id="menu-plano" class="dropdown-content hidden absolute top-full left-0 bg-white rounded-xl shadow-xl min-w-[220px] flex-col z-[9999]">
+                <a href="pmp.html" class="dropdown-item">PMP - Preventiva</a>
+                <a href="PL.html" class="dropdown-item">PL - Lubrificação</a>
+                <a href="pmpr.html" class="dropdown-item">PMPR - Preditiva Programada</a>
+                <a href="pi.html" class="dropdown-item">PI - Inspeção</a>
+            </div>
+        </div>
+        <div class="relative dropdown" id="dropdown-os">
+            <button class="menu-link text-white font-semibold text-base py-2 px-2 hover:text-yellow-300 hover:border-yellow-300 border-b-4 border-transparent transition flex items-center gap-1" type="button" aria-haspopup="true" aria-expanded="false">
+                Ordem de Serviço
+                <i class="ph ph-caret-down ml-1"></i>
+            </button>
+            <div id="menu-os" class="dropdown-content hidden absolute top-full left-0 bg-white rounded-xl shadow-xl min-w-[220px] flex-col z-[9999]">
+                <a href="agendamento.html" class="dropdown-item">Gerar Ordem de Serviço</a>
+            </div>
+        </div>
+        <div class="relative dropdown" id="dropdown-gerenciamento">
+            <button class="menu-link text-white font-semibold text-base py-2 px-2 hover:text-yellow-300 hover:border-yellow-300 border-b-4 border-transparent transition flex items-center gap-1" type="button" aria-haspopup="true" aria-expanded="false">
+                Gerenciamento
+                <i class="ph ph-caret-down ml-1"></i>
+            </button>
+            <div id="menu-gerenciamento" class="dropdown-content hidden absolute top-full left-0 bg-white rounded-xl shadow-xl min-w-[220px] flex-col z-[9999]">
+                <a href="controle.html" class="dropdown-item">Controle</a>
+                <a href="visaodafrota.html" class="dropdown-item">Visão Geral de Frota</a>
+            </div>
+        </div>
+        <a href="seguranca.html" class="menu-link text-white font-semibold text-base py-2 px-2 hover:text-yellow-300 hover:border-yellow-300 border-b-4 border-transparent transition">
+            Segurança
+        </a>
+        <div class="relative dropdown" id="dropdown-alerts">
+            <button class="menu-link text-white font-semibold text-base py-2 px-2 hover:text-yellow-300 hover:border-yellow-300 border-b-4 border-transparent transition flex items-center gap-1" type="button" aria-haspopup="true" aria-expanded="false" id="alertBellButton">
+                <i class="ph ph-bell text-xl"></i>
+                <span id="alertCount" class="bg-red-500 text-white text-xs font-bold rounded-full px-2 py-1 -mt-4 -mr-4 absolute top-1/2 left-1/2 transform translate-x-1/4 -translate-y-1/4" style="display: none;">0</span>
+            </button>
+            <div id="alertDropdown" class="dropdown-content hidden absolute top-full right-0 bg-white rounded-xl shadow-xl min-w-[300px] flex-col z-[9999] p-4">
+                <h3 class="text-lg font-bold text-gray-800 mb-2">Notificações</h3>
+                <div id="alertList" class="text-gray-700">
+                    <p class="text-sm text-gray-500">Nenhum alerta no momento.</p>
+                </div>
+            </div>
+        </div>
+        <a href="#" onclick="logout()" class="menu-link text-white font-semibold text-base py-2 px-2 hover:text-yellow-300 hover:border-yellow-300 border-b-4 border-transparent transition">
+            Sair
+        </a>
+    </nav>
+</header>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const dropdownToggles = document.querySelectorAll('.dropdown > button');
+        dropdownToggles.forEach(toggle => {
+            toggle.addEventListener('click', function() {
+                const dropdownContent = this.nextElementSibling;
+                const isExpanded = this.getAttribute('aria-expanded') === 'true';
+
+                // Close all other dropdowns
+                document.querySelectorAll('.dropdown-content').forEach(content => {
+                    if (content !== dropdownContent) {
+                        content.classList.add('hidden');
+                        content.classList.remove('flex', 'animate-fade-in-down');
+                        if (content.previousElementSibling) {
+                            content.previousElementSibling.setAttribute('aria-expanded', 'false');
+                        }
+                    }
+                });
+
+                // Toggle current dropdown
+                if (isExpanded) {
+                    dropdownContent.classList.add('hidden');
+                    dropdownContent.classList.remove('flex', 'animate-fade-in-down');
+                    this.setAttribute('aria-expanded', 'false');
+                } else {
+                    dropdownContent.classList.remove('hidden');
+                    dropdownContent.classList.add('flex', 'animate-fade-in-down');
+                    this.setAttribute('aria-expanded', 'true');
+                }
+            });
+        });
+
+        const submenuTriggers = document.querySelectorAll('.submenu-trigger');
+        submenuTriggers.forEach(trigger => {
+            trigger.addEventListener('click', function(event) {
+                event.stopPropagation(); // Prevent main dropdown from closing
+                const submenuContent = this.nextElementSibling;
+                const isExpanded = this.getAttribute('aria-expanded') === 'true';
+
+                // Close all other submenus at the same level
+                trigger.closest('.dropdown-content, .submenu-content').querySelectorAll('.submenu-content').forEach(content => {
+                    if (content !== submenuContent) {
+                        content.classList.add('hidden');
+                        content.classList.remove('flex', 'animate-fade-in-right');
+                        if (content.previousElementSibling) {
+                            content.previousElementSibling.setAttribute('aria-expanded', 'false');
+                            const caret = content.previousElementSibling.querySelector('.ph-caret-right');
+                            if (caret) caret.classList.remove('rotate');
+                        }
+                    }
+                });
+
+
+                if (isExpanded) {
+                    submenuContent.classList.add('hidden');
+                    submenuContent.classList.remove('flex', 'animate-fade-in-right');
+                    this.setAttribute('aria-expanded', 'false');
+                    this.querySelector('.ph-caret-right').classList.remove('rotate');
+                } else {
+                    submenuContent.classList.remove('hidden');
+                    submenuContent.classList.add('flex', 'animate-fade-in-right');
+                    this.setAttribute('aria-expanded', 'true');
+                    this.querySelector('.ph-caret-right').classList.add('rotate');
+                }
+            });
+        });
+
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', function(event) {
+            dropdownToggles.forEach(toggle => {
+                const dropdownContent = toggle.nextElementSibling;
+                if (!toggle.contains(event.target) && !dropdownContent.contains(event.target)) {
+                    dropdownContent.classList.add('hidden');
+                    dropdownContent.classList.remove('flex', 'animate-fade-in-down');
+                    toggle.setAttribute('aria-expanded', 'false');
+                }
+            });
+
+            submenuTriggers.forEach(trigger => {
+                const submenuContent = trigger.nextElementSibling;
+                if (!trigger.contains(event.target) && !submenuContent.contains(event.target)) {
+                    submenuContent.classList.add('hidden');
+                    submenuContent.classList.remove('flex', 'animate-fade-in-right');
+                    trigger.setAttribute('aria-expanded', 'false');
+                    trigger.querySelector('.ph-caret-right').classList.remove('rotate');
+                }
+            });
+        });
+
+        // Set active menu link based on current page
+        const currentPath = window.location.pathname.split('/').pop();
+        const menuLinks = document.querySelectorAll('.menu-link');
+        menuLinks.forEach(link => {
+            if (link.getAttribute('href') === currentPath) {
+                link.classList.add('active-menu');
+                // For nested active items, ensure their parent dropdown is open
+                let parentDropdownContent = link.closest('.dropdown-content');
+                while (parentDropdownContent) {
+                    parentDropdownContent.classList.add('flex'); // Use flex to show it
+                    parentDropdownContent.classList.remove('hidden');
+                    const parentButton = parentDropdownContent.previousElementSibling;
+                    if (parentButton) {
+                        parentButton.classList.add('active-menu');
+                        const parentCaret = parentButton.querySelector('.ph-caret-down, .ph-caret-right');
+                        if (parentCaret) {
+                            if (parentCaret.classList.contains('ph-caret-down')) {
+                                parentCaret.style.transform = 'rotate(180deg)';
+                            } else {
+                                parentCaret.style.transform = 'rotate(90deg)';
+                            }
+                        }
+                        parentButton.setAttribute('aria-expanded', 'true');
+                    }
+                    parentDropdownContent = parentDropdownContent.closest('.dropdown-content');
+                }
+            }
+        });
+    });
+
+    function logout() {
+        // Implement your logout logic here, e.g., clearing session, redirecting
+        alert('Você foi desconectado.');
+        window.location.href = 'login.html'; // Redirect to login page
+    }
+</script>
+
+
+    <main class="flex-1 p-6">
+        <div class="container mx-auto">
+            <h1 class="text-4xl font-bold text-center text-green-700 mb-8">Cadastro de Fornecedores</h1>
+
+            <div class="form-container">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-6">Adicionar Novo Fornecedor</h2>
+                <form id="supplierForm" class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                    <div class="form-group">
+                        <label for="supplierName">Nome do Fornecedor:</label>
+                        <input type="text" id="supplierName" placeholder="Nome Completo" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="supplierContact">Contato:</label>
+                        <input type="text" id="supplierContact" placeholder="Nome do Contato" />
+                    </div>
+                    <div class="form-group">
+                        <label for="supplierPhone">Telefone:</label>
+                        <input type="tel" id="supplierPhone" placeholder="(XX) XXXXX-XXXX" />
+                    </div>
+                    <div class="form-group">
+                        <label for="supplierEmail">E-mail:</label>
+                        <input type="email" id="supplierEmail" placeholder="contato@fornecedor.com" />
+                    </div>
+                    <div class="form-group">
+                        <label for="supplierAddress">Endereço:</label>
+                        <input type="text" id="supplierAddress" placeholder="Rua, Número, Bairro, Cidade, Estado" />
+                    </div>
+                    <div class="form-group">
+                        <label for="supplierService">Serviço/Produto Oferecido:</label>
+                        <input type="text" id="supplierService" placeholder="Ex: Manutenção de Pneus" />
+                    </div>
+                    <div class="form-group">
+                        <label for="monthlyExpense">Valor Gasto (R$):</label>
+                        <input type="number" id="monthlyExpense" placeholder="0.00" step="0.01" min="0" value="0" />
+                    </div>
+                    <div class="form-group">
+                        <label for="registrationNumber">Número de Cadastro:</label>
+                        <input type="text" id="registrationNumber" placeholder="CNPJ/CPF ou Inscrição Estadual" />
+                    </div>
+                    <div class="md:col-span-2">
+                        <button type="submit" class="btn-submit">
+                            <i class="ph ph-plus-circle text-2xl"></i>
+                            Adicionar Fornecedor
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="plan-list-container mt-8">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-6">Lista de Fornecedores</h2>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full bg-white rounded-lg shadow overflow-hidden">
+                        <thead class="bg-green-100">
+                            <tr>
+                                <th class="py-3 px-4 text-left text-sm font-semibold text-green-800">Nome</th>
+                                <th class="py-3 px-4 text-left text-sm font-semibold text-green-800">Contato</th>
+                                <th class="py-3 px-4 text-left text-sm font-semibold text-green-800">Telefone</th>
+                                <th class="py-3 px-4 text-left text-sm font-semibold text-green-800">E-mail</th>
+                                <th class="py-3 px-4 text-left text-sm font-semibold text-green-800">Endereço</th>
+                                <th class="py-3 px-4 text-left text-sm font-semibold text-green-800">Serviço</th>
+                                <th class="py-3 px-4 text-left text-sm font-semibold text-green-800">Gastos(R$)</th>
+                                <th class="py-3 px-4 text-left text-sm font-semibold text-green-800">Nº Cadastro</th>
+                                <th class="py-3 px-4 text-left text-sm font-semibold text-green-800">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="suppliersTableBody" class="divide-y divide-gray-200">
+                            </tbody>
+                    </table>
+                </div>
+                <p id="noSuppliersMessage" class="text-gray-500 text-center py-4 hidden">Nenhum fornecedor cadastrado ainda.</p>
+            </div>
+        </div>
+    </main>
+
+    <div id="editSupplierModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="editModalTitle">Editar Fornecedor</h2>
+                <button class="modal-close-button" onclick="closeEditModal()">
+                    <i class="ph ph-x"></i>
+                </button>
+            </div>
+            <form id="editSupplierForm">
+                <input type="hidden" id="editSupplierId">
+                <div class="form-group">
+                    <label for="editSupplierName">Nome do Fornecedor:</label>
+                    <input type="text" id="editSupplierName" required />
+                </div>
+                <div class="form-group">
+                    <label for="editSupplierContact">Contato:</label>
+                    <input type="text" id="editSupplierContact" />
+                </div>
+                <div class="form-group">
+                    <label for="editSupplierPhone">Telefone:</label>
+                    <input type="tel" id="editSupplierPhone" />
+                </div>
+                <div class="form-group">
+                    <label for="editSupplierEmail">E-mail:</label>
+                    <input type="email" id="editSupplierEmail" />
+                </div>
+                <div class="form-group">
+                    <label for="editSupplierAddress">Endereço:</label>
+                    <input type="text" id="editSupplierAddress" />
+                </div>
+                <div class="form-group">
+                    <label for="editSupplierService">Serviço/Produto Oferecido:</label>
+                    <input type="text" id="editSupplierService" />
+                </div>
+                <div class="form-group">
+                    <label for="editMonthlyExpense">Valor Gasto  (R$):</label>
+                    <input type="number" id="editMonthlyExpense" step="0.01" min="0" />
+                </div>
+                <div class="form-group">
+                    <label for="editRegistrationNumber">Número de Cadastro:</label>
+                    <input type="text" id="editRegistrationNumber" />
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-cancel" onclick="closeEditModal()">Cancelar</button>
+                    <button type="submit" class="btn-save-modal">Salvar Alterações</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="confirmModal" class="modal">
+        <div class="modal-content max-w-sm text-center p-8">
+            <h2 id="confirmModalTitle" class="text-2xl font-bold text-gray-800 mb-4">Confirmar Ação</h2>
+            <p id="confirmModalMessage" class="text-gray-700 mb-6">Você tem certeza que deseja realizar esta ação?</p>
+            <div class="flex justify-center gap-4">
+                <button id="confirmModalNo" class="btn-cancel">Não</button>
+                <button id="confirmModalYes" class="btn-save-modal">Sim</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="feedbackMessage" class="feedback-message"></div>
+
+    <script>
+        let suppliers = [];
+        let supplierIdToDelete = null;
+        let supplierIdToEdit = null;
+
+        const supplierForm = document.getElementById('supplierForm');
+        const suppliersTableBody = document.getElementById('suppliersTableBody');
+        const noSuppliersMessage = document.getElementById('noSuppliersMessage');
+        const feedbackMessage = document.getElementById('feedbackMessage');
+
+        const editSupplierModal = document.getElementById('editSupplierModal');
+        const editSupplierForm = document.getElementById('editSupplierForm');
+        const editSupplierId = document.getElementById('editSupplierId');
+        const editSupplierName = document.getElementById('editSupplierName');
+        const editSupplierContact = document.getElementById('editSupplierContact');
+        const editSupplierPhone = document.getElementById('editSupplierPhone');
+        const editSupplierEmail = document.getElementById('editSupplierEmail');
+        const editSupplierAddress = document.getElementById('editSupplierAddress');
+        const editSupplierService = document.getElementById('editSupplierService');
+        const editMonthlyExpense = document.getElementById('editMonthlyExpense');
+        const editRegistrationNumber = document.getElementById('editRegistrationNumber');
+
+        const confirmModal = document.getElementById('confirmModal');
+        const confirmModalTitle = document.getElementById('confirmModalTitle');
+        const confirmModalMessage = document.getElementById('confirmModalMessage');
+        const confirmModalYes = document.getElementById('confirmModalYes');
+        const confirmModalNo = document.getElementById('confirmModalNo');
+
+        // --- Utility Functions ---
+        function showFeedback(message, type = 'success') {
+            feedbackMessage.textContent = message;
+            feedbackMessage.className = `feedback-message show ${type}`;
+            setTimeout(() => {
+                feedbackMessage.classList.remove('show');
+            }, 3000);
+        }
+
+        function generateUniqueId() {
+            return Date.now().toString(36) + Math.random().toString(36).substr(2);
+        }
+
+        function saveDataToLocalStorage() {
+            localStorage.setItem('fornecedores', JSON.stringify(suppliers));
+        }
+
+        function loadDataFromLocalStorage() {
+            const storedSuppliers = localStorage.getItem('fornecedores');
+            if (storedSuppliers) {
+                suppliers = JSON.parse(storedSuppliers);
+            }
+        }
+
+        // --- Render Functions ---
+        function renderSuppliersTable() {
+            suppliersTableBody.innerHTML = ''; // Clear existing rows
+            if (suppliers.length === 0) {
+                noSuppliersMessage.classList.remove('hidden');
+                return;
+            }
+            noSuppliersMessage.classList.add('hidden');
+
+            suppliers.forEach(supplier => {
+                const row = suppliersTableBody.insertRow();
+                row.className = 'hover:bg-gray-50'; // Tailwind for hover effect
+                row.innerHTML = `
+                    <td class="py-3 px-4 text-sm text-gray-700">${supplier.name}</td>
+                    <td class="py-3 px-4 text-sm text-gray-700">${supplier.contact}</td>
+                    <td class="py-3 px-4 text-sm text-gray-700">${supplier.phone}</td>
+                    <td class="py-3 px-4 text-sm text-gray-700">${supplier.email}</td>
+                    <td class="py-3 px-4 text-sm text-gray-700">${supplier.address}</td>
+                    <td class="py-3 px-4 text-sm text-gray-700">${supplier.service}</td>
+                    <td class="py-3 px-4 text-sm text-gray-700">R$ ${parseFloat(supplier.monthlyExpense).toFixed(2)}</td>
+                    <td class="py-3 px-4 text-sm text-gray-700">${supplier.registrationNumber}</td>
+                    <td class="py-3 px-4 text-sm text-gray-700 whitespace-nowrap">
+                        <button onclick="showEditModal('${supplier.id}')" class="text-blue-600 hover:text-blue-800 mr-3">
+                            <i class="ph ph-pencil text-lg"></i>
+                        </button>
+                        <button onclick="showConfirmDeleteModal('${supplier.id}', '${supplier.name}')" class="text-red-600 hover:text-red-800">
+                            <i class="ph ph-trash text-lg"></i>
+                        </button>
+                    </td>
+                `;
+            });
+        }
+
+        // --- Add Supplier ---
+        supplierForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const newSupplier = {
+                id: generateUniqueId(),
+                name: document.getElementById('supplierName').value,
+                contact: document.getElementById('supplierContact').value,
+                phone: document.getElementById('supplierPhone').value,
+                email: document.getElementById('supplierEmail').value,
+                address: document.getElementById('supplierAddress').value,
+                service: document.getElementById('supplierService').value,
+                monthlyExpense: parseFloat(document.getElementById('monthlyExpense').value) || 0,
+                registrationNumber: document.getElementById('registrationNumber').value
+            };
+
+            suppliers.push(newSupplier);
+            saveDataToLocalStorage();
+            renderSuppliersTable();
+            showFeedback('Fornecedor adicionado com sucesso!', 'success');
+            supplierForm.reset();
+        });
+
+        // --- Edit Supplier Modal ---
+        function showEditModal(id) {
+            supplierIdToEdit = id;
+            const supplier = suppliers.find(s => s.id === id);
+            if (supplier) {
+                editSupplierId.value = supplier.id;
+                editSupplierName.value = supplier.name;
+                editSupplierContact.value = supplier.contact;
+                editSupplierPhone.value = supplier.phone;
+                editSupplierEmail.value = supplier.email;
+                editSupplierAddress.value = supplier.address;
+                editSupplierService.value = supplier.service;
+                editMonthlyExpense.value = supplier.monthlyExpense;
+                editRegistrationNumber.value = supplier.registrationNumber;
+
+                editSupplierModal.classList.add('open');
+            } else {
+                showFeedback('Fornecedor não encontrado para edição.', 'error');
+            }
+        }
+
+        function closeEditModal() {
+            editSupplierModal.classList.remove('open');
+            supplierIdToEdit = null;
+        }
+
+        editSupplierForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const updatedSupplier = {
+                id: editSupplierId.value,
+                name: editSupplierName.value,
+                contact: editSupplierContact.value,
+                phone: editSupplierPhone.value,
+                email: editSupplierEmail.value,
+                address: editSupplierAddress.value,
+                service: editSupplierService.value,
+                monthlyExpense: parseFloat(editMonthlyExpense.value) || 0,
+                registrationNumber: editRegistrationNumber.value
+            };
+
+            suppliers = suppliers.map(s => s.id === updatedSupplier.id ? updatedSupplier : s);
+            saveDataToLocalStorage();
+            renderSuppliersTable();
+            showFeedback('Fornecedor atualizado com sucesso!', 'success');
+            closeEditModal();
+        });
+
+        // --- Delete Supplier Confirmation Modal ---
+        function showConfirmDeleteModal(id, name) {
+            supplierIdToDelete = id;
+            confirmModalTitle.textContent = 'Confirmar Exclusão';
+            confirmModalMessage.textContent = `Tem certeza que deseja excluir o fornecedor "${name}"? Esta ação não pode ser desfeita.`;
+            confirmModalYes.textContent = 'Sim, Excluir';
+            confirmModalYes.onclick = deleteSupplier; // Set the action for the Yes button
+            confirmModalNo.onclick = closeConfirmModal; // Set the action for the No button
+            confirmModal.classList.add('open');
+        }
+
+        function closeConfirmModal() {
+            confirmModal.classList.remove('open');
+            supplierIdToDelete = null;
+        }
+
+        function deleteSupplier() {
+            if (supplierIdToDelete) {
+                suppliers = suppliers.filter(s => s.id !== supplierIdToDelete);
+                saveDataToLocalStorage();
+                renderSuppliersTable();
+                showFeedback('Fornecedor excluído com sucesso!', 'success');
+                closeConfirmModal();
+            }
+        }
+
+        // Close confirmation modal by clicking outside
+        confirmModal.addEventListener('click', (event) => {
+            if (event.target === confirmModal) {
+                closeConfirmModal();
+            }
+        });
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            loadDataFromLocalStorage();
+            renderSuppliersTable();
+        });
+    </script>
+</body>
+</html>

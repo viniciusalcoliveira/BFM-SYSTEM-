@@ -1,0 +1,1308 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cadastro de Veículos - BFM Frotas</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+     <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f0f4f8; /* Light background for a clean look */
+            color: #2c3e50; /* Darker text for readability */
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased; /* Smoother font rendering */
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* Custom animation for dropdown fade-in (downwards) */
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in-down {
+            animation: fadeInDown 0.3s ease-out forwards;
+            transform-origin: top;
+        }
+
+        /* Custom animation for submenu fade-in (sideways) */
+        @keyframes fadeInRight {
+            from { opacity: 0; transform: translateX(-10px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        .animate-fade-in-right {
+            animation: fadeInRight 0.3s ease-out forwards;
+            transform-origin: left;
+        }
+
+        /* Custom scrollbar styling for a consistent look */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background-color: rgb(20, 139, 36); /* Semi-transparent primary green */
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(26, 77, 62, 0.1); /* Lighter track */
+        }
+
+        /* Base dropdown item styling */
+        .dropdown-item {
+            padding: 0.75rem 1.5rem;
+            color: #374151; /* gray-700 */
+            font-weight: 500;
+            white-space: nowrap;
+            display: block; /* Ensure it takes full width */
+            width: 100%;
+            text-align: left;
+            transition: background-color 0.2s ease, color 0.2s ease;
+        }
+
+        .dropdown-item:hover {
+            background-color: #e0f2f7; /* lighter blue/greenish hue for hover */
+            color: #1e7e15; /* primary green for hover text */
+        }
+
+        /* Specific styling for nested submenu trigger buttons */
+        .submenu-trigger {
+            width: 100%;
+            text-align: left;
+            padding: 0.75rem 1.5rem;
+            color: #374151;
+            font-weight: 500;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: transparent; /* Reset button default bg */
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.2s ease, color 0.2s ease;
+        }
+
+        .submenu-trigger:hover {
+            background-color: #e0f2f7;
+            color: #0da326;
+        }
+
+        /* Styles for dropdown content (main menus) */
+        .dropdown-content {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* shadow-xl */
+        }
+
+        /* Styles for submenu content (nested menus) */
+        .submenu-content {
+            position: absolute;
+            top: 0;
+            left: 100%; /* Opens to the right */
+            min-width: 220px;
+            background-color: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            z-index: 10000; /* Ensure it's above other elements */
+            display: flex;
+            flex-direction: column;
+            border-left: 1px solid #e2e8f0; /* Small border for visual separation */
+        }
+
+        /* Adjust caret rotation for main dropdowns */
+        .ph-caret-down {
+            transition: transform 0.2s ease-in-out;
+        }
+        .menu-link[aria-expanded="true"] .ph-caret-down {
+            transform: rotate(180deg); /* Rotates up when open */
+        }
+
+        /* Adjust caret rotation for submenus */
+        .ph-caret-right {
+            transition: transform 0.2s ease-in-out;
+        }
+        .submenu-trigger[aria-expanded="true"] .ph-caret-right {
+            transform: rotate(90deg); /* Rotates down when open (if opening right) */
+        }
+
+        /* Active menu styling */
+        .active-menu {
+            color: #facc15 !important; /* yellow-300 */
+            border-bottom: 4px solid #facc15 !important; /* yellow-300 */
+        }
+
+        /* Responsive adjustments for mobile */
+        @media (max-width: 767px) { /* Tailind's md breakpoint is 768px */
+            .md\:flex-row {
+                flex-direction: column;
+            }
+            .md\:mb-0 {
+                margin-bottom: 1rem; /* Adjust margin for mobile brand */
+            }
+            .nav {
+                width: 100%;
+                flex-direction: column;
+                align-items: flex-start;
+                padding-top: 1rem;
+            }
+            .menu-link, .dropdown > button {
+                width: 100%;
+                text-align: left;
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+
+            /* Main dropdowns revert to full width and relative positioning for mobile */
+            .dropdown-content {
+                position: static !important; /* Override absolute for mobile */
+                width: 100%;
+                border-radius: 0;
+                box-shadow: none;
+                border-top: 1px solid #e2e8f0; /* Add a subtle divider */
+                padding-left: 1rem; /* Indent dropdown items */
+            }
+            /* Submenus also revert to full width and static positioning for mobile */
+            .submenu-content {
+                position: static !important; /* Override absolute for mobile */
+                width: 100%;
+                border-radius: 0;
+                box-shadow: none;
+                border-left: none; /* Remove left border */
+                border-top: 1px solid #e2e8f0; /* Add a subtle divider */
+                padding-left: 2rem; /* Further indent nested items */
+            }
+
+            .ph-caret-down, .ph-caret-right {
+                transform: rotate(0deg) !important; /* Reset rotation for mobile */
+            }
+            .menu-link[aria-expanded="true"] .ph-caret-down,
+            .submenu-trigger[aria-expanded="true"] .ph-caret-right {
+                transform: rotate(180deg) !important; /* Still rotate down for consistency in mobile dropdowns */
+            }
+        }
+
+        /* Form styling */
+        .form-container, .list-container {
+            background-color: #ffffff;
+            padding: 2.5rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            margin-bottom: 2rem; /* Consistent spacing */
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #334155; /* slate-700 */
+        }
+
+        .form-group input[type="text"],
+        .form-group input[type="date"],
+        .form-group input[type="number"],
+        .form-group select {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid #cbd5e1; /* slate-300 */
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            color: #475569; /* slate-700 */
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .form-group input[type="text"]:focus,
+        .form-group input[type="date"]:focus,
+        .form-group input[type="number"]:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #16a34a; /* green-600 */
+            box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.2); /* green-600 with opacity */
+        }
+
+        .btn-submit {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            width: auto; /* Adjusted to auto for content fitting */
+            padding: 1rem 1.5rem;
+            background-color: #16a34a; /* green-600 */
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 1.125rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background-color 0.2s ease, transform 0.1s ease;
+            margin-top: 2rem;
+        }
+
+        .btn-submit:hover {
+            background-color: #15803d; /* green-700 */
+            transform: translateY(-1px);
+        }
+
+        .btn-submit:active {
+            transform: translateY(0);
+        }
+
+        /* List Table Styling */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1.5rem;
+        }
+
+        .data-table th, .data-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0; /* Light border */
+        }
+
+        .data-table th {
+            background-color: #f1f5f9; /* slate-100 */
+            color: #334155; /* slate-700 */
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.875rem;
+        }
+
+        .data-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .data-table tbody tr:hover {
+            background-color: #f8fafc; /* Very light hover effect */
+        }
+
+        /* Action Buttons within Table */
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-edit {
+            background-color: #3b82f6; /* blue-500 */
+            color: white;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.375rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        .btn-edit:hover {
+            background-color: #2563eb; /* blue-600 */
+        }
+
+        .btn-delete {
+            background-color: #ef4444; /* red-500 */
+            color: white;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.375rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        .btn-delete:hover {
+            background-color: #dc2626; /* red-600 */
+        }
+
+        /* Modal Specific Styles */
+        .modal, .modal-overlay { /* Combined for consistency */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10001; /* Above other elements */
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .modal.active, .modal-overlay.active { /* Use 'active' to show */
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background-color: #ffffff;
+            padding: 2.5rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            width: 90%;
+            max-width: 500px; /* Adjusted max width for modals */
+            max-height: 90vh; /* Limit height to prevent overflow */
+            overflow-y: auto; /* Enable scrolling for long forms */
+            position: relative;
+            transform: translateY(-20px);
+            transition: transform 0.3s ease;
+        }
+
+        .modal.active .modal-content, .modal-overlay.active .modal-content {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 1rem;
+        }
+
+        .modal-header h2 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #16a34a;
+        }
+
+        .modal-close-button {
+            background: none;
+            border: none;
+            font-size: 2rem;
+            cursor: pointer;
+            color: #64748b; /* slate-500 */
+            transition: color 0.2s ease;
+        }
+
+        .modal-close-button:hover {
+            color: #334155; /* slate-700 */
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-top: 2rem;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 1.5rem;
+        }
+
+        .btn-cancel {
+            background-color: #64748b; /* slate-500 */
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            border: none;
+        }
+
+        .btn-cancel:hover {
+            background-color: #475569; /* slate-700 */
+        }
+
+        .btn-save-modal {
+            background-color: #16a34a; /* green-600 */
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            border: none;
+        }
+
+        .btn-save-modal:hover {
+            background-color: #15803d; /* green-700 */
+        }
+
+        /* Feedback Message (Toast) */
+        #userFeedback { /* Renamed for consistency with JS */
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            color: white; /* Changed text color to white for better visibility on colored backgrounds */
+            z-index: 10002;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+        }
+
+        #userFeedback.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Classes for feedback types */
+        #userFeedback.bg-green-100 { background-color: #d1fae5; color: #065f46; } /* Light green, dark green text */
+        #userFeedback.bg-red-100 { background-color: #fee2e2; color: #991b1b; }     /* Light red, dark red text */
+        #userFeedback.bg-yellow-100 { background-color: #fffbeb; color: #92400e; }  /* Light yellow, dark yellow text */
+        #userFeedback.bg-blue-100 { background-color: #dbeafe; color: #1e40af; }   /* Light blue, dark blue text */
+
+    </style>
+</head>
+<body class="overflow-x-hidden">
+
+   <header class="bg-green-700 text-white p-4 flex flex-col md:flex-row items-center justify-between shadow-lg sticky top-0 z-50 rounded-b-xl">
+    <div class="font-extrabold text-3xl tracking-wider select-none mb-4 md:mb-0" tabindex="0">
+        <span class="text-white">BFM</span><span class="text-yellow-300"> FROTAS</span>
+    </div>
+
+    <nav class="flex flex-wrap gap-x-4 gap-y-2 items-center justify-center" role="navigation" aria-label="Menu principal">
+
+        <a href="dashboard.html" class="menu-link text-white font-semibold text-base py-2 px-2 relative whitespace-nowrap border-b-4 border-transparent hover:text-yellow-300 hover:border-yellow-300 transition">
+            Dashboard
+        </a>
+
+        <div class="relative dropdown" id="dropdown-configuracoes">
+            <button class="menu-link text-white font-semibold text-base py-2 px-2 active-menu hover:text-yellow-300 hover:border-yellow-300 border-b-4 border-transparent transition flex items-center gap-1" type="button" aria-haspopup="true" aria-expanded="false">
+                Configurações <i class="ph ph-caret-down ml-1"></i>
+            </button>
+
+            <div id="menu-configuracoes" class="dropdown-content hidden absolute top-full left-0 bg-white rounded-xl shadow-xl min-w-[220px] z-[9999] flex-col">
+
+                <div class="relative group" id="dropdown-veiculos-submenu">
+                    <button class="submenu-trigger" type="button" aria-haspopup="true" aria-expanded="false">
+                        Veículos
+                        <i class="ph ph-caret-right ml-2"></i>
+                    </button>
+
+                    <div id="menu-veiculos-submenu" class="submenu-content hidden">
+                        <a href="cadastroveiculos.html" class="dropdown-item">Cadastro de Veículos</a>
+                        <a href="cadastro_combustivel.html" class="dropdown-item">Cadastro de Combustível</a>
+                        <a href="cadastro_marcas.html" class="dropdown-item">Cadastro de Marcas</a>
+                        <a href="cadastro_modelo.html" class="dropdown-item">Cadastro de Modelo</a>
+                        <a href="anexosdocumentos.html" class="dropdown-item">Anexar Documento</a>
+                    </div>
+                </div>
+                <div class="relative group" id="dropdown-servicos-submenu">
+                    <button class="submenu-trigger" type="button" aria-haspopup="true" aria-expanded="false">
+                        Serviços
+                        <i class="ph ph-caret-right ml-2"></i>
+                    </button>
+
+                    <div id="menu-servicos-submenu" class="submenu-content hidden">
+                        <a href="cadastro-compartimentos.html" class="dropdown-item">Cadastro de Compartimentos</a>
+                        <a href="cadastro_acoes.html" class="dropdown-item">Cadastro de Ações</a>
+                    </div>
+                </div>
+                <a href="cadastro_tecnicos.html" class="dropdown-item">Cadastro de Técnicos</a>
+                <a href="fornecedor.html" class="dropdown-item">Cadastro de Fornecedores</a>
+                <a href="cadastro_periodicidade.html" class="dropdown-item">Cadastro de Periodicidade</a>
+                <a href="oficinas.html" class="dropdown-item">Cadastro de Oficina</a>
+                <a href="controlehodometrohorimetro.html" class="dropdown-item">Controle de Hodômetro/Horímetro</a>
+            </div>
+        </div>
+        <div class="relative dropdown" id="dropdown-plano">
+            <button class="menu-link text-white font-semibold text-base py-2 px-2 hover:text-yellow-300 hover:border-yellow-300 border-b-4 border-transparent transition flex items-center gap-1" type="button" aria-haspopup="true" aria-expanded="false">
+                Plano de Manutenção <i class="ph ph-caret-down ml-1"></i>
+            </button>
+            <div id="menu-plano" class="dropdown-content hidden absolute top-full left-0 bg-white rounded-xl shadow-xl min-w-[220px] flex-col z-[9999]">
+                <a href="pmp.html" class="dropdown-item">PMP - Preventiva</a>
+                <a href="PL.html" class="dropdown-item">PL - Lubrificação</a>
+                <a href="pmpr.html" class="dropdown-item">PMPR - Preditiva</a>
+                <a href="pi.html" class="dropdown-item">PI - Inspeção</a>
+            </div>
+        </div>
+
+        <div class="relative dropdown" id="dropdown-os">
+            <button class="menu-link text-white font-semibold text-base py-2 px-2 hover:text-yellow-300 hover:border-yellow-300 border-b-4 border-transparent transition flex items-center gap-1" type="button" aria-haspopup="true" aria-expanded="false">
+                Ordem de Serviço <i class="ph ph-caret-down ml-1"></i>
+            </button>
+            <div id="menu-os" class="dropdown-content hidden absolute top-full left-0 bg-white rounded-xl shadow-xl min-w-[220px] flex-col z-[9999]">
+                <a href="agendamento.html" class="dropdown-item">Gerar Ordem de Serviço</a>
+            </div>
+        </div>
+
+        <div class="relative dropdown" id="dropdown-gerenciamento">
+            <button class="menu-link text-white font-semibold text-base py-2 px-2 hover:text-yellow-300 hover:border-yellow-300 border-b-4 border-transparent transition flex items-center gap-1" type="button" aria-haspopup="true" aria-expanded="false">
+                Gerenciamento <i class="ph ph-caret-down ml-1"></i>
+            </button>
+            <div id="menu-gerenciamento" class="dropdown-content hidden absolute top-full left-0 bg-white rounded-xl shadow-xl min-w-[220px] flex-col z-[9999]">
+                <a href="controle.html" class="dropdown-item">Controle</a>
+                <a href="visaodafrota.html" class="dropdown-item">Visão Geral de Frota</a>
+            </div>
+        </div>
+
+        <a href="seguranca.html" class="menu-link text-white font-semibold text-base py-2 px-2 hover:text-yellow-300 hover:border-yellow-300 border-b-4 border-transparent transition">
+            Segurança
+        </a>
+
+        <div class="relative dropdown" id="dropdown-alerts">
+            <button class="menu-link text-white font-semibold text-base py-2 px-2 hover:text-yellow-300 hover:border-yellow-300 border-b-4 border-transparent transition flex items-center gap-1" type="button" aria-haspopup="true" aria-expanded="false" id="alertBellButton">
+                <i class="ph ph-bell text-xl"></i>
+                <span id="alertCount" class="bg-red-500 text-white text-xs font-bold rounded-full px-2 py-1 -mt-4 -mr-4 absolute top-1/2 left-1/2 transform translate-x-1/4 -translate-y-1/4" style="display: none;">0</span>
+            </button>
+            <div id="alertDropdown" class="dropdown-content hidden absolute top-full right-0 bg-white rounded-xl shadow-xl min-w-[300px] flex-col z-[9999] p-4">
+                <h3 class="text-lg font-bold text-gray-800 mb-2">Notificações</h3>
+                <div id="alertList" class="text-gray-700">
+                    <p class="text-sm text-gray-500">Nenhum alerta no momento.</p>
+                </div>
+            </div>
+        </div>
+        <a href="#" onclick="logout()" class="menu-link text-white font-semibold text-base py-2 px-2 hover:text-yellow-300 hover:border-yellow-300 border-b-4 border-transparent transition">
+            Sair
+        </a>
+    </nav>
+</header>
+<main class="flex-grow container mx-auto p-6">
+    <h1 class="text-4xl font-bold text-gray-800 mb-8 text-center">Cadastro de Veículos</h1>
+
+    <div class="form-container">
+        <h2 class="text-2xl font-semibold text-green-700 mb-6">Informações do Veículo</h2>
+        <form id="vehicleForm" class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+            <div class="form-group col-span-1 md:col-span-1">
+                <label for="Nome">Nome do Veículo/NúmeroFrota:</label>
+                <input type="text" id="Nome" placeholder="Ex: Celta Prata / 001" required class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-green-500 uppercase" maxlength="15">
+            </div>
+            <div class="form-group">
+                <label for="placa">Placa:</label>
+                <input type="text" id="placa" placeholder="ABC1234" required class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-green-500 uppercase" maxlength="7">
+            </div>
+            <div class="form-group">
+                <label for="chassi">Chassi:</label>
+                <input type="text" id="chassi" placeholder="Ex: 9BW..." required class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-green-500 uppercase" maxlength="17">
+            </div>
+
+            <div class="form-group flex items-end">
+                <div class="flex-grow">
+                    <label for="marca">Marca:</label>
+                    <select id="marca" required class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-green-500">
+                        <option value="">Selecione uma Marca</option>
+                    </select>
+                </div>
+                <button type="button" onclick="openRegisterModal('marca')" class="ml-2 p-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors flex-shrink-0" aria-label="Adicionar Nova Marca">
+                    <i class="ph ph-plus-circle text-xl"></i>
+                </button>
+            </div>
+
+            <div class="form-group flex items-end">
+                <div class="flex-grow">
+                    <label for="modelo">Modelo:</label>
+                    <select id="modelo" required class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-green-500">
+                        <option value="">Selecione um Modelo</option>
+                    </select>
+                </div>
+                <button type="button" onclick="openRegisterModal('modelo')" class="ml-2 p-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors flex-shrink-0" aria-label="Adicionar Novo Modelo">
+                    <i class="ph ph-plus-circle text-xl"></i>
+                </button>
+            </div>
+
+            <div class="form-group">
+                <label for="anoFabricacao">Ano de Fabricação:</label>
+                <input type="number" id="anoFabricacao" placeholder="AAAA" required min="1900" max="2100" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-green-500">
+            </div>
+
+            <div class="form-group flex items-end">
+                <div class="flex-grow">
+                    <label for="tipoVeiculo">Tipo de Veículo:</label>
+                    <select id="tipoVeiculo" required class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-green-500">
+                        <option value="">Selecione um Tipo</option>
+                    </select>
+                </div>
+                <button type="button" onclick="openRegisterModal('tipo')" class="ml-2 p-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors flex-shrink-0" aria-label="Adicionar Novo Tipo de Veículo">
+                    <i class="ph ph-plus-circle text-xl"></i>
+                </button>
+            </div>
+
+            <div class="form-group flex items-end">
+                <div class="flex-grow">
+                    <label for="combustivel">Combustível:</label>
+                    <select id="combustivel" required class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-green-500">
+                        <option value="">Selecione um Combustível</option>
+                    </select>
+                </div>
+                <button type="button" onclick="openRegisterModal('combustivel')" class="ml-2 p-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors flex-shrink-0" aria-label="Adicionar Novo Combustível">
+                    <i class="ph ph-plus-circle text-xl"></i>
+                </button>
+            </div>
+
+            <div class="form-group">
+                <label for="cor">Cor:</label>
+                <input type="text" id="cor" placeholder="Ex: Azul" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-green-500">
+            </div>
+            <div class="form-group">
+                <label for="renavam">Renavam:</label>
+                <input type="text" id="renavam" placeholder="Ex: 12345678901" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-green-500" maxlength="11">
+            </div>
+            <div class="form-group">
+                <label for="quilometragemAtual">Quilometragem Atual (KM):</label>
+                <input type="number" id="quilometragemAtual" placeholder="Ex: 50000" min="0" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-green-500">
+            </div>
+            <div class="form-group">
+                <label for="status">Status:</label>
+                <select id="status" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-green-500">
+                    <option value="ATIVO">ATIVO</option>
+                    <option value="INATIVO">INATIVO</option>
+                    <option value="MANUTENÇÃO">MANUTENÇÃO</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="ultimaRevisao">Última Revisão:</label>
+                <input type="date" id="ultimaRevisao" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-green-500">
+            </div>
+
+            <div class="form-group col-span-full flex items-center gap-4 mt-2">
+                <input type="checkbox" id="hasPMP" class="form-checkbox h-5 w-5 text-green-600 rounded">
+                <label for="hasPMP" class="text-gray-700 font-medium">Possui PMP (Plano de Manutenção Preventiva)</label>
+            </div>
+            <div class="form-group col-span-full flex items-center gap-4">
+                <input type="checkbox" id="hasPL" class="form-checkbox h-5 w-5 text-green-600 rounded">
+                <label for="hasPL" class="text-gray-700 font-medium">Possui PL (Plano de Lubrificação)</label>
+            </div>
+
+            <div class="col-span-full flex justify-end">
+                <button type="submit" class="btn-submit">
+                    <i class="ph ph-plus-circle text-2xl"></i>
+                    Cadastrar Veículo
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <div class="list-container mt-10">
+        <h2 class="text-2xl font-semibold text-green-700 mb-6">Veículos Cadastrados</h2>
+        <div class="overflow-x-auto">
+            <table class="data-table min-w-full">
+                <thead>
+                    <tr>
+                        <th class="px-6 py-3">Nome/Frota</th>
+                        <th class="px-6 py-3">Placa</th>
+                        <th class="px-6 py-3">Modelo</th>
+                        <th class="px-6 py-3">Marca</th>
+                        <th class="px-6 py-3">Ano</th>
+                        <th class="px-6 py-3">Tipo</th>
+                        <th class="px-6 py-3">Renavam</th>
+                        <th class="px-6 py-3">Planos</th>
+                        <th class="px-6 py-3">Status</th>
+                        <th class="px-6 py-3">Última Revisão</th>
+                        <th class="px-6 py-3 text-right">Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="vehiclesTableBody">
+                    </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+
+<div id="editVehicleModal" class="modal">
+    <div class="modal-content max-w-2xl">
+        <div class="modal-header">
+            <h2 class="text-3xl font-bold text-green-700">Editar Veículo</h2>
+            <button onclick="closeEditVehicleModal()" class="modal-close-button" aria-label="Fechar modal de edição">
+                <i class="ph ph-x-circle"></i>
+            </button>
+        </div>
+        <form id="editVehicleForm" class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+            <div class="form-group col-span-1 md:col-span-1">
+                <label for="edit-placa">Placa:</label>
+                <input type="text" id="edit-placa" required class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-green-500 uppercase" maxlength="7">
+            </div>
+            <div class="form-group">
+                <label for="edit-chassi">Chassi:</label>
+                <input type="text" id="edit-chassi" required class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-green-500 uppercase" maxlength="17">
+            </div>
+
+            <div class="form-group flex items-end">
+                <div class="flex-grow">
+                    <label for="edit-marca">Marca:</label>
+                    <select id="edit-marca" required class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-green-500">
+                        <option value="">Selecione uma Marca</option>
+                    </select>
+                </div>
+                <button type="button" onclick="openRegisterModal('marca')" class="ml-2 p-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors flex-shrink-0" aria-label="Adicionar Nova Marca">
+                    <i class="ph ph-plus-circle text-xl"></i>
+                </button>
+            </div>
+
+            <div class="form-group flex items-end">
+                <div class="flex-grow">
+                    <label for="edit-modelo">Modelo:</label>
+                    <select id="edit-modelo" required class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-green-500">
+                        <option value="">Selecione um Modelo</option>
+                    </select>
+                </div>
+                <button type="button" onclick="openRegisterModal('modelo')" class="ml-2 p-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors flex-shrink-0" aria-label="Adicionar Novo Modelo">
+                    <i class="ph ph-plus-circle text-xl"></i>
+                </button>
+            </div>
+
+            <div class="form-group">
+                <label for="edit-anoFabricacao">Ano de Fabricação:</label>
+                <input type="number" id="edit-anoFabricacao" required min="1900" max="2100" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-green-500">
+            </div>
+
+            <div class="form-group flex items-end">
+                <div class="flex-grow">
+                    <label for="edit-tipoVeiculo">Tipo de Veículo:</label>
+                    <select id="edit-tipoVeiculo" required class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-green-500">
+                        <option value="">Selecione um Tipo</option>
+                    </select>
+                </div>
+                <button type="button" onclick="openRegisterModal('tipo')" class="ml-2 p-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors flex-shrink-0" aria-label="Adicionar Novo Tipo de Veículo">
+                    <i class="ph ph-plus-circle text-xl"></i>
+                </button>
+            </div>
+
+            <div class="form-group flex items-end">
+                <div class="flex-grow">
+                    <label for="edit-combustivel">Combustível:</label>
+                    <select id="edit-combustivel" required class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-green-500">
+                        <option value="">Selecione um Combustível</option>
+                    </select>
+                </div>
+                <button type="button" onclick="openRegisterModal('combustivel')" class="ml-2 p-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors flex-shrink-0" aria-label="Adicionar Novo Combustível">
+                    <i class="ph ph-plus-circle text-xl"></i>
+                </button>
+            </div>
+
+            <div class="form-group">
+                <label for="edit-cor">Cor:</label>
+                <input type="text" id="edit-cor" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-green-500">
+            </div>
+            <div class="form-group">
+                <label for="edit-renavam">Renavam:</label>
+                <input type="text" id="edit-renavam" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-green-500" maxlength="11">
+            </div>
+            <div class="form-group">
+                <label for="edit-quilometragemAtual">Quilometragem Atual (KM):</label>
+                <input type="number" id="edit-quilometragemAtual" min="0" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-green-500">
+            </div>
+            <div class="form-group">
+                <label for="edit-status">Status:</label>
+                <select id="edit-status" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-green-500">
+                    <option value="ATIVO">ATIVO</option>
+                    <option value="INATIVO">INATIVO</option>
+                    <option value="MANUTENÇÃO">MANUTENÇÃO</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="edit-ultimaRevisao">Última Revisão:</label>
+                <input type="date" id="edit-ultimaRevisao" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-green-500">
+            </div>
+
+            <div class="form-group col-span-full flex items-center gap-4 mt-2">
+                <input type="checkbox" id="edit-hasPMP" class="form-checkbox h-5 w-5 text-green-600 rounded">
+                <label for="edit-hasPMP" class="text-gray-700 font-medium">Possui PMP (Plano de Manutenção Preventiva)</label>
+            </div>
+            <div class="form-group col-span-full flex items-center gap-4">
+                <input type="checkbox" id="edit-hasPL" class="form-checkbox h-5 w-5 text-green-600 rounded">
+                <label for="edit-hasPL" class="text-gray-700 font-medium">Possui PL (Plano de Lubrificação)</label>
+            </div>
+
+            <div class="modal-footer col-span-full">
+                <button type="button" onclick="closeEditVehicleModal()" class="btn-cancel">Cancelar</button>
+                <button type="submit" class="btn-save-modal">Salvar Alterações</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="registerModal" class="modal">
+    <div class="modal-content max-w-md">
+        <div class="modal-header">
+            <h3 id="registerModalTitle" class="text-2xl font-bold text-green-900">Cadastrar Novo Item</h3>
+            <button onclick="closeRegisterModal()" class="text-gray-400 hover:text-red-600 transition-colors p-1 rounded-full" aria-label="Fechar modal">
+                <i class="ph ph-x-circle text-3xl"></i>
+            </button>
+        </div>
+        <div class="p-8">
+            <div class="mb-4">
+                <label for="registerName" class="block font-semibold mb-2">Nome do Item:</label>
+                <input type="text" id="registerName" placeholder="Digite o nome" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-green-500" />
+            </div>
+            <button type="button" onclick="addRegisterItem()" class="w-full bg-green-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-700 transition-colors">
+                Adicionar
+            </button>
+            <div class="mt-6">
+                <h4 class="text-lg font-semibold mb-3 text-gray-800">Itens Cadastrados:</h4>
+                <ul id="registerList" class="border border-gray-200 rounded-lg divide-y divide-gray-100">
+                    </ul>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" onclick="closeRegisterModal()" class="btn-cancel">Fechar</button>
+        </div>
+    </div>
+</div>
+
+<div id="userFeedback" class="hidden"></div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const dropdowns = document.querySelectorAll('.dropdown');
+        dropdowns.forEach(dropdown => {
+            const button = dropdown.querySelector('button[aria-haspopup="true"]');
+            const dropdownContent = dropdown.querySelector('.dropdown-content');
+
+            if (button && dropdownContent) {
+                button.addEventListener('click', function(event) {
+                    event.stopPropagation(); // Prevent document click from immediately closing
+                    // Close other open dropdowns
+                    dropdowns.forEach(otherDropdown => {
+                        const otherDropdownContent = otherDropdown.querySelector('.dropdown-content');
+                        const otherButton = otherDropdown.querySelector('button[aria-haspopup="true"]');
+                        if (otherDropdown !== dropdown && otherDropdownContent && !otherDropdownContent.classList.contains('hidden')) {
+                            otherDropdownContent.classList.add('hidden');
+                            otherDropdownContent.classList.remove('animate-fade-in-down');
+                            if (otherButton) {
+                                otherButton.setAttribute('aria-expanded', 'false');
+                            }
+                        }
+                    });
+
+                    // Toggle current dropdown
+                    dropdownContent.classList.toggle('hidden');
+                    dropdownContent.classList.toggle('animate-fade-in-down');
+                    button.setAttribute('aria-expanded', dropdownContent.classList.contains('hidden') ? 'false' : 'true');
+
+                    // Close any open submenus within this dropdown when its main menu is toggled
+                    const openSubmenus = dropdownContent.querySelectorAll('.submenu-content:not(.hidden)');
+                    openSubmenus.forEach(submenu => {
+                        submenu.classList.add('hidden');
+                        submenu.classList.remove('animate-fade-in-right');
+                        const submenuTrigger = submenu.previousElementSibling;
+                        if (submenuTrigger && submenuTrigger.hasAttribute('aria-expanded')) {
+                            submenuTrigger.setAttribute('aria-expanded', 'false');
+                        }
+                    });
+                });
+
+                // Prevent clicks inside the dropdown from closing it
+                dropdownContent.addEventListener('click', function(event) {
+                    event.stopPropagation();
+                });
+            }
+        });
+
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', function(event) {
+            dropdowns.forEach(dropdown => {
+                const dropdownContent = dropdown.querySelector('.dropdown-content');
+                const button = dropdown.querySelector('button[aria-haspopup="true"]');
+                // Check if the click was outside the dropdown button and content
+                if (dropdownContent && button && !dropdown.contains(event.target)) {
+                    dropdownContent.classList.add('hidden');
+                    dropdownContent.classList.remove('animate-fade-in-down');
+                    button.setAttribute('aria-expanded', 'false');
+                }
+            });
+        });
+
+        // Submenu logic
+        const submenuTriggers = document.querySelectorAll('.submenu-trigger');
+        submenuTriggers.forEach(trigger => {
+            const submenuContent = trigger.nextElementSibling; // The submenu content
+            if (submenuContent && submenuContent.classList.contains('submenu-content')) {
+                trigger.addEventListener('click', function(event) {
+                    event.stopPropagation(); // Prevent parent dropdown from closing
+
+                    // Close other open submenus within the same parent dropdown
+                    const parentDropdownContent = trigger.closest('.dropdown-content');
+                    if (parentDropdownContent) {
+                        const otherSubmenus = parentDropdownContent.querySelectorAll('.submenu-content:not(.hidden)');
+                        otherSubmenus.forEach(otherSubmenu => {
+                            const otherTrigger = otherSubmenu.previousElementSibling;
+                            if (otherSubmenu !== submenuContent && otherTrigger) {
+                                otherSubmenu.classList.add('hidden');
+                                otherSubmenu.classList.remove('animate-fade-in-right');
+                                otherTrigger.setAttribute('aria-expanded', 'false');
+                            }
+                        });
+                    }
+
+                    // Toggle current submenu
+                    submenuContent.classList.toggle('hidden');
+                    submenuContent.classList.toggle('animate-fade-in-right');
+                    trigger.setAttribute('aria-expanded', submenuContent.classList.contains('hidden') ? 'false' : 'true');
+                });
+
+                // Prevent clicks inside submenu from closing it
+                submenuContent.addEventListener('click', function(event) {
+                    event.stopPropagation();
+                });
+            }
+        });
+
+        // Alert Bell Button Logic
+        const alertBellButton = document.getElementById('alertBellButton');
+        const alertDropdown = document.getElementById('alertDropdown');
+        if (alertBellButton && alertDropdown) {
+            alertBellButton.addEventListener('click', function(event) {
+                event.stopPropagation(); // Prevents this click from bubbling up to document
+                alertDropdown.classList.toggle('hidden');
+                alertDropdown.classList.toggle('animate-fade-in-down');
+                alertBellButton.setAttribute('aria-expanded', alertDropdown.classList.contains('hidden') ? 'false' : 'true');
+            });
+
+            alertDropdown.addEventListener('click', function(event) {
+                event.stopPropagation(); // Prevents clicks *inside* the dropdown from closing it
+            });
+        }
+    });
+
+    function logout() {
+        alert('Você foi desconectado.'); // Placeholder for logout logic
+        // window.location.href = 'login.html'; // Redirect to login page
+    }
+
+    // --- Start of Vehicles Management Script ---
+    const vehicleForm = document.getElementById('vehicleForm');
+    const vehiclesTableBody = document.getElementById('vehiclesTableBody');
+    const editVehicleForm = document.getElementById('editVehicleForm');
+    const editVehicleModal = document.getElementById('editVehicleModal');
+    const userFeedback = document.getElementById('userFeedback');
+
+    // Modals for dynamic registration
+    const registerModal = document.getElementById('registerModal');
+    const registerModalTitle = document.getElementById('registerModalTitle');
+    const registerNameInput = document.getElementById('registerName');
+    const registerList = document.getElementById('registerList');
+    let currentRegisterType = ''; // 'marca', 'modelo', 'tipo', 'combustivel'
+
+    // Data storage (using localStorage for persistence)
+    // Initialize arrays from localStorage or as empty arrays if not found
+    let vehicles = JSON.parse(localStorage.getItem('vehicles')) || [];
+    let brands = JSON.parse(localStorage.getItem('brands')) || [];
+    let models = JSON.parse(localStorage.getItem('models')) || [];
+    let types = JSON.parse(localStorage.getItem('types')) || [];
+    let fuels = JSON.parse(localStorage.getItem('fuels')) || [];
+
+    function showFeedback(message, type = 'success') {
+        userFeedback.textContent = message;
+        userFeedback.className = 'show'; // Reset classes
+        if (type === 'success') {
+            userFeedback.classList.add('bg-green-100');
+        } else if (type === 'error') {
+            userFeedback.classList.add('bg-red-100');
+        } else if (type === 'warning') {
+            userFeedback.classList.add('bg-yellow-100');
+        } else if (type === 'info') {
+            userFeedback.classList.add('bg-blue-100');
+        }
+        setTimeout(() => {
+            userFeedback.classList.remove('show');
+        }, 3000);
+    }
+
+    // Populate dynamic select fields
+    function populateSelect(selectId, dataArray, selectedValue = '') {
+        const selectElement = document.getElementById(selectId);
+        if (!selectElement) return;
+        const placeholderText = `Selecione um${selectId.includes('marca') ? 'a Marca' : selectId.includes('modelo') ? ' Modelo' : selectId.includes('tipoVeiculo') ? ' Tipo' : ' Combustível'}`;
+        selectElement.innerHTML = `<option value="">${placeholderText}</option>`;
+        dataArray.forEach(item => {
+            const option = document.createElement('option');
+            option.value = item;
+            option.textContent = item;
+            if (item === selectedValue) {
+                option.selected = true;
+            }
+            selectElement.appendChild(option);
+        });
+    }
+
+    function renderAllSelects(selectedVehicle = {}) {
+        populateSelect('marca', brands, selectedVehicle.marca);
+        populateSelect('modelo', models, selectedVehicle.modelo);
+        populateSelect('tipoVeiculo', types, selectedVehicle.tipoVeiculo);
+        populateSelect('combustivel', fuels, selectedVehicle.combustivel);
+
+        populateSelect('edit-marca', brands, selectedVehicle.marca);
+        populateSelect('edit-modelo', models, selectedVehicle.modelo);
+        populateSelect('edit-tipoVeiculo', types, selectedVehicle.tipoVeiculo);
+        populateSelect('edit-combustivel', fuels, selectedVehicle.combustivel);
+    }
+
+    // Initial render of all selects when the page loads
+    renderAllSelects();
+
+    // Handle Add Vehicle Form Submission
+    vehicleForm.addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        const newVehicle = {
+            id: Date.now(), // Simple unique ID
+            Nome: document.getElementById('Nome').value, // Add Nome field
+            placa: document.getElementById('placa').value.toUpperCase(),
+            chassi: document.getElementById('chassi').value.toUpperCase(),
+            marca: document.getElementById('marca').value,
+            modelo: document.getElementById('modelo').value,
+            anoFabricacao: document.getElementById('anoFabricacao').value,
+            tipoVeiculo: document.getElementById('tipoVeiculo').value,
+            combustivel: document.getElementById('combustivel').value,
+            cor: document.getElementById('cor').value,
+            renavam: document.getElementById('renavam').value,
+            quilometragemAtual: document.getElementById('quilometragemAtual').value,
+            status: document.getElementById('status').value,
+            ultimaRevisao: document.getElementById('ultimaRevisao').value,
+            hasPMP: document.getElementById('hasPMP').checked,
+            hasPL: document.getElementById('hasPL').checked,
+        };
+
+        vehicles.push(newVehicle);
+        localStorage.setItem('vehicles', JSON.stringify(vehicles));
+        renderVehiclesTable();
+        vehicleForm.reset();
+        renderAllSelects(); // Re-populate selects to clear selections
+        showFeedback('Veículo cadastrado com sucesso!', 'success');
+    });
+
+    // Render Vehicles Table
+    function renderVehiclesTable() {
+        vehiclesTableBody.innerHTML = ''; // Clear existing rows
+        if (vehicles.length === 0) {
+            const row = vehiclesTableBody.insertRow();
+            row.innerHTML = `<td colspan="11" class="px-6 py-4 whitespace-nowrap text-center text-gray-500">Nenhum veículo cadastrado.</td>`;
+            return;
+        }
+
+        vehicles.forEach(vehicle => {
+            const row = vehiclesTableBody.insertRow();
+            // Display Nome or fall back to ID if Nome is undefined (for old data)
+            row.innerHTML = `
+                <td class="px-6 py-4 whitespace-nowrap">${vehicle.Nome || 'ID: ' + vehicle.id}</td>
+                <td class="px-6 py-4 whitespace-nowrap">${vehicle.placa}</td>
+                <td class="px-6 py-4 whitespace-nowrap">${vehicle.modelo}</td>
+                <td class="px-6 py-4 whitespace-nowrap">${vehicle.marca}</td>
+                <td class="px-6 py-4 whitespace-nowrap">${vehicle.anoFabricacao}</td>
+                <td class="px-6 py-4 whitespace-nowrap">${vehicle.tipoVeiculo}</td>
+                <td class="px-6 py-4 whitespace-nowrap">${vehicle.renavam}</td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    ${vehicle.hasPMP ? '<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 mr-1">PMP</span>' : ''}
+                    ${vehicle.hasPL ? '<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">PL</span>' : ''}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${vehicle.status === 'ATIVO' ? 'bg-green-100 text-green-800' : vehicle.status === 'MANUTENÇÃO' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}">
+                        ${vehicle.status}
+                    </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">${vehicle.ultimaRevisao}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <div class="action-buttons">
+                        <button onclick="openEditVehicleModal(${vehicle.id})" class="btn-edit">
+                            <i class="ph ph-pencil"></i>
+                            Editar
+                        </button>
+                        <button onclick="deleteVehicle(${vehicle.id})" class="btn-delete">
+                            <i class="ph ph-trash"></i>
+                            Excluir
+                        </button>
+                    </div>
+                </td>
+            `;
+            vehiclesTableBody.appendChild(row);
+        });
+    }
+
+    // Initial render of the table on page load
+    renderVehiclesTable();
+
+    // Edit Vehicle Modal Functions
+    let currentEditingVehicleId = null;
+
+    function openEditVehicleModal(id) {
+        currentEditingVehicleId = id;
+        const vehicleToEdit = vehicles.find(v => v.id === id);
+
+        if (vehicleToEdit) {
+            // Populate Nome field - ensure it exists before populating
+            document.getElementById('edit-Nome').value = vehicleToEdit.Nome || '';
+            document.getElementById('edit-placa').value = vehicleToEdit.placa;
+            document.getElementById('edit-chassi').value = vehicleToEdit.chassi;
+            document.getElementById('edit-anoFabricacao').value = vehicleToEdit.anoFabricacao;
+            document.getElementById('edit-cor').value = vehicleToEdit.cor;
+            document.getElementById('edit-renavam').value = vehicleToEdit.renavam;
+            document.getElementById('edit-quilometragemAtual').value = vehicleToEdit.quilometragemAtual;
+            document.getElementById('edit-status').value = vehicleToEdit.status;
+            document.getElementById('edit-ultimaRevisao').value = vehicleToEdit.ultimaRevisao;
+            document.getElementById('edit-hasPMP').checked = vehicleToEdit.hasPMP;
+            document.getElementById('edit-hasPL').checked = vehicleToEdit.hasPL;
+
+            renderAllSelects(vehicleToEdit); // Populate selects with current values
+
+            editVehicleModal.classList.add('active');
+        } else {
+            showFeedback('Veículo não encontrado.', 'error');
+        }
+    }
+
+    function closeEditVehicleModal() {
+        editVehicleModal.classList.remove('active');
+        currentEditingVehicleId = null;
+    }
+
+    editVehicleForm.addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        if (!currentEditingVehicleId) return;
+
+        const vehicleIndex = vehicles.findIndex(v => v.id === currentEditingVehicleId);
+        if (vehicleIndex > -1) {
+            vehicles[vehicleIndex] = {
+                ...vehicles[vehicleIndex], // Keep existing properties
+                Nome: document.getElementById('edit-Nome').value, // Update Nome field
+                placa: document.getElementById('edit-placa').value.toUpperCase(),
+                chassi: document.getElementById('edit-chassi').value.toUpperCase(),
+                marca: document.getElementById('edit-marca').value,
+                modelo: document.getElementById('edit-modelo').value,
+                anoFabricacao: document.getElementById('edit-anoFabricacao').value,
+                tipoVeiculo: document.getElementById('edit-tipoVeiculo').value,
+                combustivel: document.getElementById('edit-combustivel').value,
+                cor: document.getElementById('edit-cor').value,
+                renavam: document.getElementById('edit-renavam').value,
+                quilometragemAtual: document.getElementById('edit-quilometragemAtual').value,
+                status: document.getElementById('edit-status').value,
+                ultimaRevisao: document.getElementById('edit-ultimaRevisao').value,
+                hasPMP: document.getElementById('edit-hasPMP').checked,
+                hasPL: document.getElementById('edit-hasPL').checked,
+            };
+            localStorage.setItem('vehicles', JSON.stringify(vehicles));
+            renderVehiclesTable();
+            closeEditVehicleModal();
+            showFeedback('Veículo atualizado com sucesso!', 'success');
+        } else {
+            showFeedback('Erro ao atualizar veículo.', 'error');
+        }
+    });
+
+    // Delete Vehicle
+    function deleteVehicle(id) {
+        if (confirm('Tem certeza que deseja excluir este veículo?')) {
+            vehicles = vehicles.filter(v => v.id !== id);
+            localStorage.setItem('vehicles', JSON.stringify(vehicles));
+            renderVehiclesTable();
+            showFeedback('Veículo excluído com sucesso!', 'info');
+        }
+    }
+
+    // Modals for dynamic registration (Marca, Modelo, Tipo, Combustível)
+    function openRegisterModal(type) {
+        currentRegisterType = type;
+        // Adjust title and placeholder based on type
+        let title = 'Novo Item';
+        let placeholder = 'Digite o nome';
+        if (type === 'marca') { title = 'Cadastrar Nova Marca'; placeholder = 'Digite o nome da Marca'; }
+        else if (type === 'modelo') { title = 'Cadastrar Novo Modelo'; placeholder = 'Digite o nome do Modelo'; }
+        else if (type === 'tipo') { title = 'Cadastrar Novo Tipo'; placeholder = 'Digite o nome do Tipo'; }
+        else if (type === 'combustivel') { title = 'Cadastrar Novo Combustível'; placeholder = 'Digite o nome do Combustível'; }
+
+        registerModalTitle.textContent = title;
+        registerNameInput.placeholder = placeholder;
+        registerNameInput.value = ''; // Clear previous input
+        populateRegisterList(type);
+        registerModal.classList.add('active');
+    }
+
+    function closeRegisterModal() {
+        registerModal.classList.remove('active');
+        registerNameInput.value = ''; // Clear input
+        renderAllSelects(); // Re-populate all selects after potential changes
+    }
+
+    function populateRegisterList(type) {
+        registerList.innerHTML = '';
+        let dataArray;
+        if (type === 'marca') dataArray = brands;
+        else if (type === 'modelo') dataArray = models;
+        else if (type === 'tipo') dataArray = types;
+        else if (type === 'combustivel') dataArray = fuels;
+        else return;
+
+        if (dataArray.length === 0) {
+            const li = document.createElement('li');
+            li.className = 'p-3 text-gray-500 text-center';
+            li.textContent = 'Nenhum item cadastrado.';
+            registerList.appendChild(li);
+            return;
+        }
+
+        dataArray.forEach((item, index) => {
+            const li = document.createElement('li');
+            li.className = 'flex justify-between items-center p-3 hover:bg-gray-50';
+            li.innerHTML = `
+                <span class="text-gray-700">${item}</span>
+                <button type="button" onclick="deleteRegisterItem('${type}', ${index})" class="text-red-500 hover:text-red-700 transition-colors" aria-label="Excluir ${item}">
+                    <i class="ph ph-trash text-xl"></i>
+                </button>
+            `;
+            registerList.appendChild(li);
+        });
+    }
+
+    function addRegisterItem() {
+        const itemName = registerNameInput.value.trim();
+        if (itemName === '') {
+            showFeedback('Por favor, digite um nome.', 'warning');
+            return;
+        }
+
+        let dataArray;
+        let localStorageKey;
+        if (currentRegisterType === 'marca') { dataArray = brands; localStorageKey = 'brands'; }
+        else if (currentRegisterType === 'modelo') { dataArray = models; localStorageKey = 'models'; }
+        else if (currentRegisterType === 'tipo') { dataArray = types; localStorageKey = 'types'; }
+        else if (currentRegisterType === 'combustivel') { dataArray = fuels; localStorageKey = 'fuels'; }
+        else return;
+
+        if (dataArray.includes(itemName)) {
+            showFeedback('Este item já existe.', 'warning');
+            return;
+        }
+
+        dataArray.push(itemName);
+        localStorage.setItem(localStorageKey, JSON.stringify(dataArray));
+
+        registerNameInput.value = '';
+        populateRegisterList(currentRegisterType);
+        showFeedback(`${itemName} cadastrado com sucesso!`, 'success');
+    }
+
+    function deleteRegisterItem(type, index) {
+        let dataArray;
+        let localStorageKey;
+        if (type === 'marca') { dataArray = brands; localStorageKey = 'brands'; }
+        else if (type === 'modelo') { dataArray = models; localStorageKey = 'models'; }
+        else if (type === 'tipo') { dataArray = types; localStorageKey = 'types'; }
+        else if (type === 'combustivel') { dataArray = fuels; localStorageKey = 'fuels'; }
+        else return;
+
+        const deletedItem = dataArray.splice(index, 1); // Remove 1 element at 'index'
+        localStorage.setItem(localStorageKey, JSON.stringify(dataArray));
+
+        populateRegisterList(currentRegisterType);
+        showFeedback(`${deletedItem} excluído.`, 'info');
+    }
+
+    // Add 'Nome' field to the edit modal dynamically on script load
+    // Find the existing edit form and prepend the new div
+    const editForm = document.getElementById('editVehicleForm');
+    if (editForm) {
+        const nomeEditDiv = document.createElement('div');
+        nomeEditDiv.className = "form-group col-span-1 md:col-span-1"; // Add form-group class
+        nomeEditDiv.innerHTML = `
+            <label for="edit-Nome" class="block font-semibold mb-2">Nome do Veículo/NúmeroFrota:</label>
+            <input type="text" id="edit-Nome" required class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-green-500 uppercase" maxlength="15" />
+        `;
+        editForm.prepend(nomeEditDiv); // Add as the first element
+    }
+</script>
+</body>
+</html>

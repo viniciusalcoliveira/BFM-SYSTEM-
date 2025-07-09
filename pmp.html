@@ -1,0 +1,1560 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BFM Frotas - Plano de Manutenção Preventiva (PMP)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f0f4f8; /* Light background for a clean look */
+            color: #2c3e50; /* Darker text for readability */
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased; /* Smoother font rendering */
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* Custom animation for dropdown fade-in (downwards) */
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in-down {
+            animation: fadeInDown 0.3s ease-out forwards;
+            transform-origin: top;
+        }
+
+        /* Custom animation for submenu fade-in (sideways) */
+        @keyframes fadeInRight {
+            from { opacity: 0; transform: translateX(-10px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        .animate-fade-in-right {
+            animation: fadeInRight 0.3s ease-out forwards;
+            transform-origin: left;
+        }
+
+        /* Custom scrollbar styling for a consistent look */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background-color: rgb(20, 139, 36); /* Semi-transparent primary green */
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(26, 77, 62, 0.1); /* Lighter track */
+        }
+
+        /* Base dropdown item styling */
+        .dropdown-item {
+            padding: 0.75rem 1.5rem;
+            color: #374151; /* gray-700 */
+            font-weight: 500;
+            white-space: nowrap;
+            display: block; /* Ensure it takes full width */
+            width: 100%;
+            text-align: left;
+            transition: background-color 0.2s ease, color 0.2s ease;
+        }
+
+        .dropdown-item:hover {
+            background-color: #e0f2f7; /* lighter blue/greenish hue for hover */
+            color: #1e7e15; /* primary green for hover text */
+        }
+
+        /* Specific styling for nested submenu trigger buttons */
+        .submenu-trigger {
+            width: 100%;
+            text-align: left;
+            padding: 0.75rem 1.5rem;
+            color: #374151;
+            font-weight: 500;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: transparent; /* Reset button default bg */
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.2s ease, color 0.2s ease;
+        }
+
+        .submenu-trigger:hover {
+            background-color: #e0f2f7;
+            color: #0da326;
+        }
+
+        /* Styles for dropdown content (main menus) */
+        .dropdown-content {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* shadow-xl */
+        }
+
+        /* Styles for submenu content (nested menus) */
+        .submenu-content {
+            position: absolute;
+            top: 0;
+            left: 100%; /* Opens to the right */
+            min-width: 220px;
+            background-color: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            z-index: 10000; /* Ensure it's above other elements */
+            display: flex;
+            flex-direction: column;
+            border-left: 1px solid #e2e8f0; /* Small border for visual separation */
+        }
+
+        /* Adjust caret rotation for main dropdowns */
+        .ph-caret-down {
+            transition: transform 0.2s ease-in-out;
+        }
+        .menu-link[aria-expanded="true"] .ph-caret-down {
+            transform: rotate(180deg); /* Rotates up when open */
+        }
+
+        /* Adjust caret rotation for submenus */
+        .ph-caret-right {
+            transition: transform 0.2s ease-in-out;
+        }
+        .submenu-trigger[aria-expanded="true"] .ph-caret-right {
+            transform: rotate(90deg); /* Rotates down when open (if opening right) */
+        }
+
+        /* Active menu styling */
+        .active-menu {
+            color: #facc15 !important; /* yellow-300 */
+            border-bottom: 4px solid #facc15 !important; /* yellow-300 */
+        }
+
+        /* Responsive adjustments for mobile */
+        @media (max-width: 767px) { /* Tailind's md breakpoint is 768px */
+            .md\:flex-row {
+                flex-direction: column;
+            }
+            .md\:mb-0 {
+                margin-bottom: 1rem; /* Adjust margin for mobile brand */
+            }
+            .nav {
+                width: 100%;
+                flex-direction: column;
+                align-items: flex-start;
+                padding-top: 1rem;
+            }
+            .menu-link, .dropdown > button {
+                width: 100%;
+                text-align: left;
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+
+            /* Main dropdowns revert to full width and relative positioning for mobile */
+            .dropdown-content {
+                position: static !important; /* Override absolute for mobile */
+                width: 100%;
+                border-radius: 0;
+                box-shadow: none;
+                border-top: 1px solid #e2e8f0; /* Add a subtle divider */
+                padding-left: 1rem; /* Indent dropdown items */
+            }
+            /* Submenus also revert to full width and static positioning for mobile */
+            .submenu-content {
+                position: static !important; /* Override absolute for mobile */
+                width: 100%;
+                border-radius: 0;
+                box-shadow: none;
+                border-left: none; /* Remove left border */
+                border-top: 1px solid #e2e8f0; /* Add a subtle divider */
+                padding-left: 2rem; /* Further indent nested items */
+            }
+
+            .ph-caret-down, .ph-caret-right {
+                transform: rotate(0deg) !important; /* Reset rotation for mobile */
+            }
+            .menu-link[aria-expanded="true"] .ph-caret-down,
+            .submenu-trigger[aria-expanded="true"] .ph-caret-right {
+                transform: rotate(180deg) !important; /* Still rotate down for consistency in mobile dropdowns */
+            }
+        }
+
+        /* Form styling */
+        .form-container {
+            background-color: #ffffff;
+            padding: 2.5rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #334155; /* slate-700 */
+        }
+
+        .form-group input[type="text"],
+        .form-group input[type="number"],
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid #cbd5e1; /* slate-300 */
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            color: #475569; /* slate-700 */
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .form-group input[type="text"]:focus,
+        .form-group input[type="number"]:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #16a34a; /* green-600 */
+            box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.2); /* green-600 with opacity */
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+        }
+
+        .radio-group div {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .radio-group input[type="radio"] {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            width: 1.25rem;
+            height: 1.25rem;
+            border: 2px solid #94a3b8; /* slate-400 */
+            border-radius: 50%;
+            outline: none;
+            cursor: pointer;
+            position: relative;
+            transition: border-color 0.2s ease;
+        }
+
+        .radio-group input[type="radio"]:checked {
+            border-color: #16a34a; /* green-600 */
+        }
+
+        .radio-group input[type="radio"]:checked::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 0.75rem;
+            height: 0.75rem;
+            background-color: #16a34a; /* green-600 */
+            border-radius: 50%;
+        }
+
+        .radio-group label {
+            margin-bottom: 0;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-top: 1.5rem;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            width: 1.25rem;
+            height: 1.25rem;
+            border: 2px solid #94a3b8; /* slate-400 */
+            border-radius: 0.375rem; /* rounded-md */
+            outline: none;
+            cursor: pointer;
+            position: relative;
+            transition: background-color 0.2s ease, border-color 0.2s ease;
+        }
+
+        .checkbox-group input[type="checkbox"]:checked {
+            background-color: #16a34a; /* green-600 */
+            border-color: #16a34a; /* green-600 */
+        }
+
+        .checkbox-group input[type="checkbox"]:checked::after {
+            content: '\2713'; /* Checkmark character */
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 0.875rem; /* text-sm */
+            font-weight: bold;
+        }
+
+        .checkbox-group label {
+            margin-bottom: 0;
+            cursor: pointer;
+            font-weight: 500;
+            color: #334155;
+        }
+
+        .btn-submit {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            width: 100%;
+            padding: 1rem 1.5rem;
+            background-color: #16a34a; /* green-600 */
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 1.125rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background-color 0.2s ease, transform 0.1s ease;
+            margin-top: 2rem;
+        }
+
+        .btn-submit:hover {
+            background-color: #15803d; /* green-700 */
+            transform: translateY(-1px);
+        }
+
+        .btn-submit:active {
+            transform: translateY(0);
+        }
+
+        .checklist-items-container {
+            border: 1px solid #e2e8f0; /* slate-200 */
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            background-color: #f8fafc; /* slate-50 */
+            margin-bottom: 1.5rem;
+        }
+
+        .checklist-item {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* Adjusted minmax for more fields */
+            gap: 1rem 1.5rem; /* Row gap, column gap */
+            align-items: flex-end;
+            border-bottom: 1px dashed #cbd5e1; /* slate-300 */
+            padding-bottom: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .checklist-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .checklist-item .form-group {
+            margin-bottom: 0; /* Remove bottom margin for groups within checklist items */
+        }
+
+        .btn-add-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background-color: #3b82f6; /* blue-500 */
+            color: white;
+            padding: 0.75rem 1.25rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            margin-bottom: 1.5rem;
+            border: none;
+        }
+
+        .btn-add-item:hover {
+            background-color: #2563eb; /* blue-600 */
+        }
+
+        .btn-remove-item {
+            background-color: #ef4444; /* red-500 */
+            color: white;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            border: none;
+            width: fit-content;
+            justify-self: end; /* Align to the end of its grid column */
+            white-space: nowrap;
+        }
+
+        .btn-remove-item:hover {
+            background-color: #dc2626; /* red-600 */
+        }
+
+        @media (max-width: 768px) {
+            .checklist-item {
+                grid-template-columns: 1fr;
+            }
+            .btn-remove-item {
+                width: 100%;
+                justify-self: stretch;
+            }
+        }
+
+        /* Plan List Section */
+        .plan-list-container {
+            background-color: #ffffff;
+            padding: 2.5rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            margin-top: 3rem;
+        }
+        .plan-list-item {
+            display: flex;
+            flex-direction: column;
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        .plan-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 0.5rem 1rem;
+            flex-grow: 1;
+        }
+        .plan-details span {
+            font-weight: 500;
+            color: #475569;
+        }
+        .plan-details strong {
+            color: #1e293b;
+        }
+        .plan-details .text-green-700 {
+            font-weight: 600;
+        }
+        
+        .btn-integrate-api {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background-color: #22c55e; /* green-500 */
+            color: white;
+            padding: 0.75rem 1.25rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            margin-top: 1rem;
+            border: none;
+        }
+
+        .btn-integrate-api:hover {
+            background-color: #16a34a; /* green-600 */
+        }
+
+        /* Modal Specific Styles */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10001; /* Above other elements */
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .modal.open {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background-color: #ffffff;
+            padding: 2.5rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            width: 90%;
+            max-width: 800px; /* Adjust max width for content */
+            max-height: 90vh; /* Limit height to prevent overflow */
+            overflow-y: auto; /* Enable scrolling for long forms */
+            position: relative;
+            transform: translateY(-20px);
+            transition: transform 0.3s ease;
+        }
+        
+        .modal.open .modal-content {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 1rem;
+        }
+
+        .modal-header h2 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #16a34a;
+        }
+
+        .modal-close-button {
+            background: none;
+            border: none;
+            font-size: 2rem;
+            cursor: pointer;
+            color: #64748b; /* slate-500 */
+            transition: color 0.2s ease;
+        }
+
+        .modal-close-button:hover {
+            color: #334155; /* slate-700 */
+        }
+
+        .modal-checklist-container {
+            border: 1px solid #e2e8f0;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            background-color: #f8fafc;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-checklist-item {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem 1.5rem;
+            align-items: flex-end;
+            border-bottom: 1px dashed #cbd5e1;
+            padding-bottom: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-checklist-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        .modal-checklist-item .form-group {
+            margin-bottom: 0;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-top: 2rem;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 1.5rem;
+        }
+
+        .btn-cancel {
+            background-color: #64748b; /* slate-500 */
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            border: none;
+        }
+
+        .btn-cancel:hover {
+            background-color: #475569; /* slate-700 */
+        }
+
+        .btn-save-modal {
+            background-color: #16a34a; /* green-600 */
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            border: none;
+        }
+
+        .btn-save-modal:hover {
+            background-color: #15803d; /* green-700 */
+        }
+    </style>
+</head>
+<body class="overflow-x-hidden">
+
+<header class="bg-green-700 text-white p-4 flex flex-col md:flex-row items-center justify-between shadow-lg sticky top-0 z-50 rounded-b-xl">
+    <div class="font-extrabold text-3xl tracking-wider select-none mb-4 md:mb-0" tabindex="0">
+        <span class="text-white">BFM</span><span class="text-yellow-300"> FROTAS</span>
+    </div>
+
+    <nav class="flex flex-wrap gap-x-4 gap-y-2 items-center justify-center" role="navigation" aria-label="Menu principal">
+
+        <a href="dashboard.html" class="menu-link text-white font-semibold text-base py-2 px-2 relative whitespace-nowrap border-b-4 border-transparent hover:text-yellow-300 hover:border-yellow-300 transition">
+            Dashboard
+        </a>
+
+        <div class="relative dropdown" id="dropdown-configuracoes">
+            <button class="menu-link text-white font-semibold text-base py-2 px-2 hover:text-yellow-300 hover:border-yellow-300 border-b-4 border-transparent transition flex items-center gap-1" type="button" aria-haspopup="true" aria-expanded="false">
+                Configurações <i class="ph ph-caret-down ml-1"></i>
+            </button>
+
+            <div id="menu-configuracoes" class="dropdown-content hidden absolute top-full left-0 bg-white rounded-xl shadow-xl min-w-[220px] z-[9999] flex-col">
+
+                <div class="relative group" id="dropdown-veiculos-submenu">
+                    <button class="submenu-trigger" type="button" aria-haspopup="true" aria-expanded="false">
+                        Veículos
+                        <i class="ph ph-caret-right ml-2"></i>
+                    </button>
+
+                    <div id="menu-veiculos-submenu" class="submenu-content hidden">
+                        <a href="cadastroveiculos.html" class="dropdown-item">Cadastro de Veículos</a>
+                        <a href="cadastro_combustivel.html" class="dropdown-item">Cadastro de Combustível</a>
+                        <a href="cadastro_marcas.html" class="dropdown-item">Cadastro de Marcas</a>
+                        <a href="cadastro_modelo.html" class="dropdown-item">Cadastro de Modelo</a>
+                        <a href="anexosdocumentos.html" class="dropdown-item">Anexar Documento</a>
+                    </div>
+                </div>
+                <div class="relative group" id="dropdown-servicos-submenu">
+                    <button class="submenu-trigger" type="button" aria-haspopup="true" aria-expanded="false">
+                        Serviços
+                        <i class="ph ph-caret-right ml-2"></i>
+                    </button>
+
+                    <div id="menu-servicos-submenu" class="submenu-content hidden">
+                        <a href="cadastro-compartimentos.html" class="dropdown-item">Cadastro de Compartimentos</a>
+                        <a href="cadastro_acoes.html" class="dropdown-item">Cadastro de Ações</a>
+                    </div>
+                </div>
+                <a href="cadastro_tecnicos.html" class="dropdown-item">Cadastro de Técnicos</a>
+                <a href="fornecedor.html" class="dropdown-item">Cadastro de Fornecedores</a>
+                <a href="cadastro_periodicidade.html" class="dropdown-item">Cadastro de Periodicidade</a>
+                <a href="oficinas.html" class="dropdown-item">Cadastro de Oficina</a>
+                <a href="controlehodometrohorimetro.html" class="dropdown-item">Controle de Hodômetro/Horímetro</a>
+            </div>
+        </div>
+        <div class="relative dropdown" id="dropdown-plano">
+            <button class="menu-link text-white font-semibold text-base py-2 px-2 active-menu hover:text-yellow-300 hover:border-yellow-300 border-b-4 border-transparent transition flex items-center gap-1" type="button" aria-haspopup="true" aria-expanded="true">
+                Plano de Manutenção <i class="ph ph-caret-down ml-1"></i>
+            </button>
+            <div id="menu-plano" class="dropdown-content absolute top-full left-0 bg-white rounded-xl shadow-xl min-w-[220px] flex-col z-[9999] animate-fade-in-down">
+                <a href="pmp.html" class="dropdown-item active-menu">PMP - Preventiva</a>
+                <a href="PL.html" class="dropdown-item">PL - Lubrificação</a>
+                <a href="pmpr.html" class="dropdown-item">PMPR - Preditiva Programada</a>
+                <a href="pi.html" class="dropdown-item">PI - Inspeção</a>
+            </div>
+        </div>
+
+        <div class="relative dropdown" id="dropdown-os">
+            <button class="menu-link text-white font-semibold text-base py-2 px-2 hover:text-yellow-300 hover:border-yellow-300 border-b-4 border-transparent transition flex items-center gap-1" type="button" aria-haspopup="true" aria-expanded="false">
+                Ordem de Serviço <i class="ph ph-caret-down ml-1"></i>
+            </button>
+            <div id="menu-os" class="dropdown-content hidden absolute top-full left-0 bg-white rounded-xl shadow-xl min-w-[220px] flex-col z-[9999]">
+                <a href="agendamento.html" class="dropdown-item">Gerar Ordem de Serviço</a>
+            </div>
+        </div>
+
+        <div class="relative dropdown" id="dropdown-gerenciamento">
+            <button class="menu-link text-white font-semibold text-base py-2 px-2 hover:text-yellow-300 hover:border-yellow-300 border-b-4 border-transparent transition flex items-center gap-1" type="button" aria-haspopup="true" aria-expanded="false">
+                Gerenciamento <i class="ph ph-caret-down ml-1"></i>
+            </button>
+            <div id="menu-gerenciamento" class="dropdown-content hidden absolute top-full left-0 bg-white rounded-xl shadow-xl min-w-[220px] flex-col z-[9999]">
+                <a href="controle.html" class="dropdown-item">Controle</a>
+                <a href="visaodafrota.html" class="dropdown-item">Visão Geral de Frota</a>
+            </div>
+        </div>
+
+        <a href="seguranca.html" class="menu-link text-white font-semibold text-base py-2 px-2 hover:text-yellow-300 hover:border-yellow-300 border-b-4 border-transparent transition">
+            Segurança
+        </a>
+
+        <div class="relative dropdown" id="dropdown-alerts">
+            <button class="menu-link text-white font-semibold text-base py-2 px-2 hover:text-yellow-300 hover:border-yellow-300 border-b-4 border-transparent transition flex items-center gap-1" type="button" aria-haspopup="true" aria-expanded="false" id="alertBellButton">
+                <i class="ph ph-bell text-xl"></i>
+                <span id="alertCount" class="bg-red-500 text-white text-xs font-bold rounded-full px-2 py-1 -mt-4 -mr-4 absolute top-1/2 left-1/2 transform translate-x-1/4 -translate-y-1/4" style="display: none;">0</span>
+            </button>
+            <div id="alertDropdown" class="dropdown-content hidden absolute top-full right-0 bg-white rounded-xl shadow-xl min-w-[300px] flex-col z-[9999] p-4">
+                <h3 class="text-lg font-bold text-gray-800 mb-2">Notificações</h3>
+                <div id="alertList" class="text-gray-700">
+                    <p class="text-sm text-gray-500">Nenhum alerta no momento.</p>
+                </div>
+            </div>
+        </div>
+        <a href="#" onclick="logout()" class="menu-link text-white font-semibold text-base py-2 px-2 hover:text-yellow-300 hover:border-yellow-300 border-b-4 border-transparent transition">
+            Sair
+        </a>
+    </nav>
+
+</header>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const dropdowns = document.querySelectorAll('.dropdown');
+        dropdowns.forEach(dropdown => {
+            const button = dropdown.querySelector('button[aria-haspopup="true"]');
+            const dropdownContent = dropdown.querySelector('.dropdown-content');
+
+            if (button && dropdownContent) {
+                button.addEventListener('click', function(event) {
+                    event.stopPropagation(); // Prevent document click from immediately closing
+                    // Close other open dropdowns
+                    dropdowns.forEach(otherDropdown => {
+                        const otherDropdownContent = otherDropdown.querySelector('.dropdown-content');
+                        const otherButton = otherDropdown.querySelector('button[aria-haspopup="true"]');
+                        if (otherDropdown !== dropdown && otherDropdownContent && !otherDropdownContent.classList.contains('hidden')) {
+                            otherDropdownContent.classList.add('hidden');
+                            otherDropdownContent.classList.remove('animate-fade-in-down');
+                            if (otherButton) {
+                                otherButton.setAttribute('aria-expanded', 'false');
+                            }
+                        }
+                    });
+
+                    // Toggle current dropdown
+                    dropdownContent.classList.toggle('hidden');
+                    dropdownContent.classList.toggle('animate-fade-in-down');
+                    button.setAttribute('aria-expanded', dropdownContent.classList.contains('hidden') ? 'false' : 'true');
+
+                    // Close any open submenus within this dropdown when its main menu is toggled
+                    const openSubmenus = dropdownContent.querySelectorAll('.submenu-content:not(.hidden)');
+                    openSubmenus.forEach(submenu => {
+                        submenu.classList.add('hidden');
+                        submenu.classList.remove('animate-fade-in-right');
+                        const submenuTrigger = submenu.previousElementSibling;
+                        if (submenuTrigger && submenuTrigger.hasAttribute('aria-expanded')) {
+                            submenuTrigger.setAttribute('aria-expanded', 'false');
+                        }
+                    });
+                });
+
+                // Prevent clicks inside the dropdown from closing it
+                dropdownContent.addEventListener('click', function(event) {
+                    event.stopPropagation();
+                });
+            }
+        });
+
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', function(event) {
+            dropdowns.forEach(dropdown => {
+                const dropdownContent = dropdown.querySelector('.dropdown-content');
+                const button = dropdown.querySelector('button[aria-haspopup="true"]');
+                // Check if the click was outside the dropdown button and content
+                if (dropdownContent && button && !dropdown.contains(event.target)) {
+                    dropdownContent.classList.add('hidden');
+                    dropdownContent.classList.remove('animate-fade-in-down');
+                    button.setAttribute('aria-expanded', 'false');
+                }
+            });
+        });
+
+        // Submenu logic
+        const submenuTriggers = document.querySelectorAll('.submenu-trigger');
+        submenuTriggers.forEach(trigger => {
+            const submenuContent = trigger.nextElementSibling; // The submenu content
+            if (submenuContent && submenuContent.classList.contains('submenu-content')) {
+                trigger.addEventListener('click', function(event) {
+                    event.stopPropagation(); // Prevent parent dropdown from closing
+
+                    // Close other open submenus within the same parent dropdown
+                    const parentDropdownContent = trigger.closest('.dropdown-content');
+                    if (parentDropdownContent) {
+                        const otherSubmenus = parentDropdownContent.querySelectorAll('.submenu-content:not(.hidden)');
+                        otherSubmenus.forEach(otherSubmenu => {
+                            const otherTrigger = otherSubmenu.previousElementSibling;
+                            if (otherSubmenu !== submenuContent && otherTrigger) {
+                                otherSubmenu.classList.add('hidden');
+                                otherSubmenu.classList.remove('animate-fade-in-right');
+                                otherTrigger.setAttribute('aria-expanded', 'false');
+                            }
+                        });
+                    }
+
+                    // Toggle current submenu
+                    submenuContent.classList.toggle('hidden');
+                    submenuContent.classList.toggle('animate-fade-in-right');
+                    trigger.setAttribute('aria-expanded', submenuContent.classList.contains('hidden') ? 'false' : 'true');
+                });
+
+                // Prevent clicks inside submenu from closing it
+                submenuContent.addEventListener('click', function(event) {
+                    event.stopPropagation();
+                });
+            }
+        });
+
+        // Alert Bell Button Logic
+        const alertBellButton = document.getElementById('alertBellButton');
+        const alertDropdown = document.getElementById('alertDropdown');
+        if (alertBellButton && alertDropdown) {
+            alertBellButton.addEventListener('click', function(event) {
+                event.stopPropagation(); // Prevents this click from bubbling up to document
+                alertDropdown.classList.toggle('hidden');
+                alertDropdown.classList.toggle('animate-fade-in-down');
+                alertBellButton.setAttribute('aria-expanded', alertDropdown.classList.contains('hidden') ? 'false' : 'true');
+            });
+
+            alertDropdown.addEventListener('click', function(event) {
+                event.stopPropagation(); // Prevents clicks *inside* the dropdown from closing it
+            });
+        }
+    });
+
+    function logout() {
+        alert('Você foi desconectado.'); // Placeholder for logout logic
+        // window.location.href = 'login.html'; // Redirect to login page
+    }
+</script>
+    <main class="flex-1 p-6 md:p-8 overflow-y-auto">
+        <div class="max-w-7xl mx-auto px-4 md:px-8">
+            <section class="form-container">
+                <h1 class="text-4xl font-extrabold text-center text-green-800 mb-8 flex items-center justify-center">
+                    <i class="ph ph-file-plus text-green-600 text-5xl mr-4"></i> Cadastro de Plano de Manutenção Preventiva (PMP)
+                </h1>
+
+                <p class="text-center text-lg text-gray-700 mb-10 max-w-2xl mx-auto">
+                    Defina os detalhes e o checklist para a manutenção preventiva. O valor em KM ou Horas que você inserir abaixo será o limite para acionar a próxima manutenção.
+                </p>
+
+                <form id="cadastroPlanoForm">
+                    <div class="form-group">
+                        <label for="nomePlano">Nome do Plano de Manutenção Preventiva:</label>
+                        <input type="text" id="nomePlano" name="nomePlano" placeholder="Ex: PMP Caminhão Mercedes-Benz Axor" required />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="modeloVeiculo">Modelo do Veículo (para planos personalizados):</label>
+                        <input type="text" id="modeloVeiculo" name="modeloVeiculo" placeholder="Ex: Axor 2544, CAT 320D" required />
+                    </div>
+
+                    <div class="form-group">
+                        <label>Critério de Programação:</label>
+                        <div class="radio-group">
+                            <div>
+                                <input type="radio" id="critPorKm" name="criterioProgramacao" value="km" checked />
+                                <label for="critPorKm">Por KM</label>
+                            </div>
+                            <div>
+                                <input type="radio" id="critPorHoras" name="criterioProgramacao" value="horas" />
+                                <label for="critPorHoras">Por Horas</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group" id="valorProgramacaoGroup">
+                        <label for="valorProgramacao">Valor para a Próxima Manutenção (KM ou Horas):</label>
+                        <input type="number" id="valorProgramacao" name="valorProgramacao" placeholder="Ex: 10000 (KM) ou 500 (horas)" min="1" required />
+                        <small class="text-gray-500">Insira o KM ou as Horas no qual esta manutenção deverá ser realizada.</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="periodicidade">Periodicidade Adicional (Opcional, Ex: a cada 6 meses):</label>
+                        <input type="text" id="periodicidade" name="periodicidade" placeholder="Ex: A cada 6 meses, Anualmente" />
+                    </div>
+
+                    <div class="mt-8 pt-6 border-t border-gray-200">
+                        <h2 class="text-2xl font-bold text-green-700 mb-4 flex items-center">
+                            <i class="ph ph-rss-simple text-green-600 mr-2"></i> Integração de Telemetria
+                        </h2>
+                        <p class="text-gray-700 mb-4">
+                            Cole a Chave de API (API Key) do seu sistema de telemetria para permitir a atualização automática de KM e Horas.
+                        </p>
+                        <div class="form-group">
+                            <label for="telemetryApiKey">Chave de API (API Key) da Telemetria:</label>
+                            <textarea id="telemetryApiKey" name="telemetryApiKey" rows="4" placeholder="Cole sua chave de API aqui. Ex: abcdef1234567890abcdef1234567890" class="resize-y" style="min-height: 100px;"></textarea>
+                            <small class="text-gray-500 mt-2 block">
+                                *Certifique-se de que a API Key é válida e tem permissão de leitura para dados de veículos.
+                                Para maior segurança, evite compartilhar sua chave de API publicamente.
+                            </small>
+                            <button type="button" class="btn-integrate-api" onclick="integrateTelemetryAPI()">
+                                <i class="ph ph-plug-connector mr-2"></i> Integrar API
+                            </button>
+                        </div>
+                    </div>
+                    <div class="checkbox-group mb-6">
+                        <input type="checkbox" id="alertarDashboard" name="alertarDashboard" checked />
+                        <label for="alertarDashboard">Gerar alerta no Dashboard se o limite for excedido</label>
+                    </div>
+
+                    <h2 class="text-2xl font-bold text-green-700 mb-4">Checklist de Manutenção Preventiva</h2>
+                    <p class="text-gray-700 mb-4">
+                        Adicione os itens do checklist para este plano de manutenção preventiva, especificando o componente, o tipo de produto/serviço e a ação a ser realizada.
+                    </p>
+
+                    <div id="checklistItemsContainer" class="checklist-items-container">
+                        </div>
+                    <button type="button" id="addChecklistItemBtn" class="btn-add-item">
+                        <i class="ph ph-plus-circle text-xl"></i> Adicionar Item ao Checklist
+                    </button>
+
+                    <button type="submit" class="btn-submit">
+                        <i class="ph ph-floppy-disk text-2xl"></i> Salvar Plano de Manutenção Preventiva
+                    </button>
+                </form>
+            </section>
+
+            <section class="plan-list-container">
+                <h1 class="text-4xl font-extrabold text-center text-green-800 mb-8 flex items-center justify-center">
+                    <i class="ph ph-list-checks text-green-600 text-5xl mr-4"></i> Planos de Manutenção Preventiva Cadastrados
+                </h1>
+                <p class="text-center text-lg text-gray-700 mb-10 max-w-2xl mx-auto">
+                    Visualize todos os planos de manutenção preventiva registrados, organizados por modelo de veículo.
+                </p>
+
+                <div id="registeredPlansList" class="space-y-4">
+                    <p class="text-center text-gray-500">Nenhum plano cadastrado ainda.</p>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <footer class="bg-green-800 text-white text-center p-4 mt-8 shadow-inner rounded-t-xl">
+        <p>&copy; 2025 BFM Frotas. Todos os direitos reservados.</p>
+    </footer>
+
+    <div id="editPlanModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="text-green-700">Editar Plano de Manutenção Preventiva</h2>
+                <button type="button" class="modal-close-button" onclick="closeEditModal()">
+                    <i class="ph ph-x"></i>
+                </button>
+            </div>
+            <form id="editPlanoForm">
+                <input type="hidden" id="editPlanId" name="id">
+                <div class="form-group">
+                    <label for="editNomePlano">Nome do Plano de Manutenção Preventiva:</label>
+                    <input type="text" id="editNomePlano" name="nomePlano" required />
+                </div>
+
+                <div class="form-group">
+                    <label for="editModeloVeiculo">Modelo do Veículo (para planos personalizados):</label>
+                    <input type="text" id="editModeloVeiculo" name="modeloVeiculo" required />
+                </div>
+
+                <div class="form-group">
+                    <label>Critério de Programação:</label>
+                    <div class="radio-group">
+                        <div>
+                            <input type="radio" id="editCritPorKm" name="editCriterioProgramacao" value="km" />
+                            <label for="editCritPorKm">Por KM</label>
+                        </div>
+                        <div>
+                            <input type="radio" id="editCritPorHoras" name="editCriterioProgramacao" value="horas" />
+                            <label for="editCritPorHoras">Por Horas</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="editValorProgramacao">Valor para a Próxima Manutenção (KM ou Horas):</label>
+                    <input type="number" id="editValorProgramacao" name="valorProgramacao" min="1" required />
+                    <small class="text-gray-500">Insira o KM ou as Horas no qual esta manutenção deverá ser realizada.</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="editPeriodicidade">Periodicidade Adicional (Opcional, Ex: a cada 6 meses):</label>
+                    <input type="text" id="editPeriodicidade" name="periodicidade" />
+                </div>
+
+                <div class="checkbox-group mb-6">
+                    <input type="checkbox" id="editAlertarDashboard" name="alertarDashboard" />
+                    <label for="editAlertarDashboard">Gerar alerta no Dashboard se o limite for excedido</label>
+                </div>
+
+                <h3 class="text-xl font-bold text-green-700 mb-4">Checklist de Manutenção Preventiva</h3>
+                <div id="editChecklistItemsContainer" class="modal-checklist-container">
+                </div>
+                <button type="button" id="addEditChecklistItemBtn" class="btn-add-item">
+                    <i class="ph ph-plus-circle text-xl"></i> Adicionar Item ao Checklist
+                </button>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn-cancel" onclick="closeEditModal()">Cancelar</button>
+                    <button type="submit" class="btn-save-modal">
+                        <i class="ph ph-floppy-disk text-lg mr-2"></i> Salvar Alterações
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Reusing the existing dropdown logic from pmp.html (already correct for the header)
+
+            // --- Checklist Dynamic Fields Logic (for main form) ---
+            const addChecklistItemBtn = document.getElementById('addChecklistItemBtn');
+            const checklistItemsContainer = document.getElementById('checklistItemsContainer');
+            let itemCounter = -1; // Start counter at -1 so the first item added is index 0
+
+            // Function to add a new checklist item
+            function addChecklistItem(container = checklistItemsContainer, prefix = 'checklist', initialData = {}) {
+                itemCounter++; // Increment for new item
+                const newItemHtml = `
+                    <div class="checklist-item" data-item-id="${itemCounter}">
+                        <div class="form-group">
+                            <label for="${prefix}_componente_${itemCounter}">Componente:</label>
+                            <input type="text" id="${prefix}_componente_${itemCounter}" name="${prefix}[${itemCounter}][componente]" placeholder="Ex: Motor" value="${initialData.componente || ''}" required />
+                        </div>
+                        <div class="form-group">
+                            <label for="${prefix}_tipoProduto_${itemCounter}">Tipo do Produto / Serviço:</label>
+                            <input type="text" id="${prefix}_tipoProduto_${itemCounter}" name="${prefix}[${itemCounter}][tipoProduto]" placeholder="Ex: Óleo do Motor" value="${initialData.tipoProduto || ''}" required />
+                        </div>
+                        <div class="form-group">
+                            <label for="${prefix}_acao_${itemCounter}">Especificação do Serviço / Ação:</label>
+                            <input type="text" id="${prefix}_acao_${itemCounter}" name="${prefix}[${itemCounter}][acao]" placeholder="Ex: Trocar e verificar nível" value="${initialData.acao || ''}" required />
+                        </div>
+                        <div class="form-group">
+                            <label for="${prefix}_quantidade_${itemCounter}">Quantidade:</label>
+                            <input type="number" id="${prefix}_quantidade_${itemCounter}" name="${prefix}[${itemCounter}][quantidade]" placeholder="Ex: 10" min="0" step="any" value="${initialData.quantidade || ''}" />
+                        </div>
+                        <div class="form-group">
+                            <label for="${prefix}_unidadeMedida_${itemCounter}">Unidade de Medida:</label>
+                            <input type="text" id="${prefix}_unidadeMedida_${itemCounter}" name="${prefix}[${itemCounter}][unidadeMedida]" placeholder="Ex: Litros, Peças, Kg" value="${initialData.unidadeMedida || ''}" />
+                        </div>
+                        <button type="button" class="btn-remove-item" onclick="removeChecklistItem(this)">Remover</button>
+                    </div>
+                `;
+                container.insertAdjacentHTML('beforeend', newItemHtml);
+            }
+
+            // Function to remove a checklist item (used by both main and modal forms)
+            window.removeChecklistItem = function(button) {
+                const itemToRemove = button.closest('.checklist-item, .modal-checklist-item'); // Select both classes
+                const container = itemToRemove.parentElement;
+
+                if (container.children.length > 1) { // Ensure at least one item remains
+                    itemToRemove.remove();
+                } else {
+                    alert("Você deve ter pelo menos um item no checklist.");
+                }
+            };
+
+            // Add initial item to main form when the page loads
+            addChecklistItem();
+
+            addChecklistItemBtn.addEventListener('click', () => addChecklistItem(checklistItemsContainer, 'checklist'));
+
+            // --- Form Submission Logic (for main form) ---
+            const cadastroPlanoForm = document.getElementById('cadastroPlanoForm');
+            cadastroPlanoForm.addEventListener('submit', function(event) {
+                event.preventDefault(); // Prevent default form submission
+
+                const nomePlano = document.getElementById('nomePlano').value;
+                const modeloVeiculo = document.getElementById('modeloVeiculo').value;
+                const criterioProgramacao = document.querySelector('input[name="criterioProgramacao"]:checked').value;
+                const valorProgramacao = document.getElementById('valorProgramacao').value;
+                const periodicidade = document.getElementById('periodicidade').value;
+                const telemetryApiKey = document.getElementById('telemetryApiKey').value; // Get telemetry API key
+                const alertarDashboard = document.getElementById('alertarDashboard').checked;
+
+                const checklistItems = [];
+                checklistItemsContainer.querySelectorAll('.checklist-item').forEach(itemDiv => {
+                    const componente = itemDiv.querySelector('input[name*="[componente]"]').value;
+                    const tipoProduto = itemDiv.querySelector('input[name*="[tipoProduto]"]').value;
+                    const acao = itemDiv.querySelector('input[name*="[acao]"]').value;
+                    const quantidadeInput = itemDiv.querySelector('input[name*="[quantidade]"]');
+                    const quantidade = quantidadeInput ? (quantidadeInput.value !== '' ? parseFloat(quantidadeInput.value) : null) : null;
+                    const unidadeMedidaInput = itemDiv.querySelector('input[name*="[unidadeMedida]"]');
+                    const unidadeMedida = unidadeMedidaInput ? (unidadeMedidaInput.value || null) : null;
+
+                    checklistItems.push({
+                        componente,
+                        tipoProduto,
+                        acao,
+                        quantidade, // New field
+                        unidadeMedida // New field
+                    });
+                });
+
+                const planoData = {
+                    id: 'PLAN' + Math.random().toString(36).substr(2, 9).toUpperCase(), // Generate a simple unique ID
+                    nomePlano,
+                    modeloVeiculo,
+                    criterioProgramacao,
+                    valorProgramacao: parseFloat(valorProgramacao), // Convert to number
+                    periodicidade: periodicidade || null, // Null if empty
+                    telemetryApiKey: telemetryApiKey || null, // Include telemetry API key
+                    alertarDashboard,
+                    checklist: checklistItems, // Array of checklist items
+                    // Add dummy lastMaintenanceReading and lastMaintenanceDate for simulation consistency
+                    lastMaintenanceReading: 0, // Placeholder
+                    lastMaintenanceDate: new Date().toISOString().slice(0, 10), // Today's date
+                };
+
+                console.log('Dados do Plano a serem enviados:', planoData);
+
+                // In a real application, this would send data to the backend
+                // For this simulation, we add it to the local array and refresh the list
+                simulatedMaintenancePlans.push(planoData);
+                renderRegisteredPlans(); // Re-render the list of plans
+
+                alert('Plano de Manutenção Preventiva salvo com sucesso!');
+                cadastroPlanoForm.reset(); // Limpa o formulário
+                // Clear and re-add initial checklist item after reset
+                checklistItemsContainer.innerHTML = ''; // Clear all existing items
+                itemCounter = -1; // Reset counter so first item is 0
+                addChecklistItem(); // Add the single initial item
+            });
+
+            // --- Telemetry API Integration Function (Placeholder) ---
+            window.integrateTelemetryAPI = function() {
+                const telemetryApiKey = document.getElementById('telemetryApiKey').value;
+
+                if (!telemetryApiKey) {
+                    alert('Por favor, insira uma Chave de API para integração.');
+                    return;
+                }
+
+                console.log('Tentando integrar com a API de telemetria usando a chave:', telemetryApiKey);
+
+                // Por enquanto, apenas para demonstração:
+                alert('Integração com API de telemetria simulada com a chave: ' + telemetryApiKey);
+            };
+
+
+            // --- Simulated Backend Data for Maintenance Plans (for demonstration) ---
+            // In a real application, this data would come from a backend API
+            const simulatedMaintenancePlans = [
+                {
+                    id: 'PLAN001',
+                    nomePlano: 'Manutenção Padrão Axor',
+                    modeloVeiculo: 'Axor 2544',
+                    criterioProgramacao: 'km',
+                    valorProgramacao: 155000, // Next maintenance at 155,000 KM
+                    periodicidade: null,
+                    alertarDashboard: true,
+                    lastMaintenanceReading: 150000, // Last recorded KM for this maintenance cycle
+                    lastMaintenanceDate: '2024-01-01', // Example date for periodic check
+                    checklist: [
+                        { componente: 'Motor', tipoProduto: 'Óleo do Motor', acao: 'Trocar e verificar nível', quantidade: 15, unidadeMedida: 'Litros' },
+                        { componente: 'Filtros', tipoProduto: 'Filtro de Óleo', acao: 'Trocar', quantidade: 1, unidadeMedida: 'Peça' }
+                    ]
+                },
+                {
+                    id: 'PLAN002',
+                    nomePlano: 'Inspeção Horímetro CAT',
+                    modeloVeiculo: 'CAT 320D',
+                    criterioProgramacao: 'horas',
+                    valorProgramacao: 1900, // Next maintenance at 1,900 Hours
+                    periodicidade: null,
+                    alertarDashboard: true,
+                    lastMaintenanceReading: 1800, // Last recorded Hours for this maintenance cycle
+                    lastMaintenanceDate: '2024-03-15',
+                    checklist: [
+                        { componente: 'Sistema Hidráulico', tipoProduto: 'Fluído Hidráulico', acao: 'Verificar nível e completar', quantidade: null, unidadeMedida: null },
+                        { componente: 'Pneus', tipoProduto: 'Inspeção Visual', acao: 'Verificar pressão e desgaste', quantidade: null, unidadeMedida: null }
+                    ]
+                },
+                {
+                    id: 'PLAN003',
+                    nomePlano: 'Revisão Anual Scania',
+                    modeloVeiculo: 'Scania R450',
+                    criterioProgramacao: 'km', // Primary criteria, but also has periodic
+                    valorProgramacao: 330000,
+                    periodicidade: "Anualmente",
+                    alertarDashboard: true,
+                    lastMaintenanceReading: 320000,
+                    lastMaintenanceDate: '2024-05-10',
+                    checklist: [
+                        { componente: 'Freios', tipoProduto: 'Pastilhas de Freio', acao: 'Inspecionar e substituir se necessário', quantidade: null, unidadeMedida: null },
+                        { componente: 'Suspensão', tipoProduto: 'Amortecedores', acao: 'Inspecionar vazamentos', quantidade: null, unidadeMedida: null }
+                    ]
+                },
+                 {
+                    id: 'PLAN004',
+                    nomePlano: 'Revisão Fiorino Leve',
+                    modeloVeiculo: 'Fiat Fiorino',
+                    criterioProgramacao: 'km',
+                    valorProgramacao: 88000, // Next maintenance at 88,000 KM
+                    periodicidade: null,
+                    alertarDashboard: true,
+                    lastMaintenanceReading: 85000,
+                    lastMaintenanceDate: '2024-06-01',
+                    checklist: [
+                        { componente: 'Bateria', tipoProduto: 'Bateria automotiva', acao: 'Verificar bornes e carga', quantidade: null, unidadeMedida: null },
+                        { componente: 'Lâmpadas', tipoProduto: 'Lâmpadas em geral', acao: 'Verificar funcionamento', quantidade: null, unidadeMedida: null }
+                    ]
+                }
+            ];
+
+            // --- Render Registered Plans Section ---
+            const registeredPlansListDiv = document.getElementById('registeredPlansList');
+
+            function renderRegisteredPlans() {
+                registeredPlansListDiv.innerHTML = ''; // Clear existing list
+                if (simulatedMaintenancePlans.length === 0) {
+                    registeredPlansListDiv.innerHTML = '<p class="text-center text-gray-500">Nenhum plano cadastrado ainda.</p>';
+                    return;
+                }
+
+                simulatedMaintenancePlans.forEach(plan => {
+                    const planItemDiv = document.createElement('div');
+                    planItemDiv.classList.add('plan-list-item');
+                    planItemDiv.innerHTML = `
+                        <div class="plan-details">
+                            <div>
+                                <span>Nome do Plano:</span>
+                                <strong class="text-green-700">${plan.nomePlano}</strong>
+                            </div>
+                            <div>
+                                <span>Modelo do Veículo:</span>
+                                <strong>${plan.modeloVeiculo}</strong>
+                            </div>
+                            <div>
+                                <span>Critério:</span>
+                                <strong>${plan.criterioProgramacao.toUpperCase()}</strong>
+                            </div>
+                            <div>
+                                <span>Valor Programado:</span>
+                                <strong>${plan.valorProgramacao.toLocaleString('pt-BR')} ${plan.criterioProgramacao.toUpperCase()}</strong>
+                            </div>
+                            <div>
+                                <span>Periodicidade Adicional:</span>
+                                <strong>${plan.periodicidade || 'Não especificada'}</strong>
+                            </div>
+                            <div>
+                                <span>Alertas no Dashboard:</span>
+                                <strong>${plan.alertarDashboard ? 'Sim' : 'Não'}</strong>
+                            </div>
+                        </div>
+                        <div class="flex justify-end mt-4 space-x-2">
+                            <button type="button" class="btn-edit-plan bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded" data-plan-id="${plan.id}">
+                                <i class="ph ph-pencil-simple mr-2"></i> Editar
+                            </button>
+                            <button type="button" class="btn-delete-plan bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded" data-plan-id="${plan.id}">
+                                <i class="ph ph-trash mr-2"></i> Excluir
+                            </button>
+                        </div>
+                    `;
+                    registeredPlansListDiv.appendChild(planItemDiv);
+                });
+
+                // Add event listeners for edit buttons
+                document.querySelectorAll('.btn-edit-plan').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const planId = this.dataset.planId;
+                        openEditModal(planId);
+                    });
+                });
+
+                // Add event listeners for delete buttons
+                document.querySelectorAll('.btn-delete-plan').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const planId = this.dataset.planId;
+                        deletePlan(planId);
+                    });
+                });
+                checkMaintenanceStatus(); // Re-check alerts after rendering plans
+            }
+
+            // Call render function on page load
+            renderRegisteredPlans();
+
+
+            // --- Edit Modal Logic ---
+            const editPlanModal = document.getElementById('editPlanModal');
+            const editPlanoForm = document.getElementById('editPlanoForm');
+            const editChecklistItemsContainer = document.getElementById('editChecklistItemsContainer');
+            const addEditChecklistItemBtn = document.getElementById('addEditChecklistItemBtn');
+            let currentEditingPlanId = null;
+            let editItemCounter = -1; // Counter for items in edit modal
+
+            addEditChecklistItemBtn.addEventListener('click', () => addChecklistItem(editChecklistItemsContainer, 'editChecklist', {}));
+
+            window.openEditModal = function(planId) {
+                const plan = simulatedMaintenancePlans.find(p => p.id === planId);
+                if (!plan) {
+                    console.error('Plano não encontrado:', planId);
+                    return;
+                }
+
+                currentEditingPlanId = planId; // Store the ID of the plan being edited
+
+                // Populate modal form fields
+                document.getElementById('editPlanId').value = plan.id;
+                document.getElementById('editNomePlano').value = plan.nomePlano;
+                document.getElementById('editModeloVeiculo').value = plan.modeloVeiculo;
+                
+                // Set radio button for programming criteria
+                if (plan.criterioProgramacao === 'km') {
+                    document.getElementById('editCritPorKm').checked = true;
+                } else {
+                    document.getElementById('editCritPorHoras').checked = true;
+                }
+                document.getElementById('editValorProgramacao').value = plan.valorProgramacao;
+                document.getElementById('editPeriodicidade').value = plan.periodicidade || '';
+                document.getElementById('editAlertarDashboard').checked = plan.alertarDashboard;
+
+                // Populate checklist items in modal
+                editChecklistItemsContainer.innerHTML = ''; // Clear existing items
+                editItemCounter = -1; // Reset counter for modal checklist
+                if (plan.checklist && plan.checklist.length > 0) {
+                    plan.checklist.forEach(item => {
+                        addChecklistItem(editChecklistItemsContainer, 'editChecklist', item);
+                    });
+                } else {
+                    addChecklistItem(editChecklistItemsContainer, 'editChecklist', {}); // Add an empty one if none exist
+                }
+
+
+                editPlanModal.classList.add('open');
+            };
+
+            window.closeEditModal = function() {
+                editPlanModal.classList.remove('open');
+                editPlanoForm.reset(); // Reset the form when closing
+                // Optional: clear checklist items if needed, but openEditModal will clear it anyway
+            };
+
+            editPlanoForm.addEventListener('submit', function(event) {
+                event.preventDefault();
+
+                const planId = document.getElementById('editPlanId').value;
+                const nomePlano = document.getElementById('editNomePlano').value;
+                const modeloVeiculo = document.getElementById('editModeloVeiculo').value;
+                const criterioProgramacao = document.querySelector('input[name="editCriterioProgramacao"]:checked').value;
+                const valorProgramacao = document.getElementById('editValorProgramacao').value;
+                const periodicidade = document.getElementById('editPeriodicidade').value;
+                const alertarDashboard = document.getElementById('editAlertarDashboard').checked;
+
+                const updatedChecklistItems = [];
+                editChecklistItemsContainer.querySelectorAll('.checklist-item').forEach(itemDiv => { // Use .checklist-item as it's the dynamic class
+                    const componente = itemDiv.querySelector('input[name*="[componente]"]').value;
+                    const tipoProduto = itemDiv.querySelector('input[name*="[tipoProduto]"]').value;
+                    const acao = itemDiv.querySelector('input[name*="[acao]"]').value;
+                    const quantidadeInput = itemDiv.querySelector('input[name*="[quantidade]"]');
+                    const quantidade = quantidadeInput ? (quantidadeInput.value !== '' ? parseFloat(quantidadeInput.value) : null) : null;
+                    const unidadeMedidaInput = itemDiv.querySelector('input[name*="[unidadeMedida]"]');
+                    const unidadeMedida = unidadeMedidaInput ? (unidadeMedidaInput.value || null) : null;
+
+                    updatedChecklistItems.push({
+                        componente,
+                        tipoProduto,
+                        acao,
+                        quantidade,
+                        unidadeMedida
+                    });
+                });
+
+                // Find the plan in the simulated data and update it
+                const planIndex = simulatedMaintenancePlans.findIndex(p => p.id === planId);
+                if (planIndex !== -1) {
+                    simulatedMaintenancePlans[planIndex] = {
+                        ...simulatedMaintenancePlans[planIndex], // Keep existing properties not in form
+                        nomePlano,
+                        modeloVeiculo,
+                        criterioProgramacao,
+                        valorProgramacao: parseFloat(valorProgramacao),
+                        periodicidade: periodicidade || null,
+                        alertarDashboard,
+                        checklist: updatedChecklistItems
+                    };
+                    alert('Plano de Manutenção atualizado com sucesso!');
+                    renderRegisteredPlans(); // Re-render the list to show changes
+                    closeEditModal();
+                } else {
+                    alert('Erro: Plano não encontrado para atualização.');
+                }
+            });
+
+            // --- Delete Plan Logic ---
+            window.deletePlan = function(planId) {
+                if (confirm('Tem certeza que deseja excluir este plano de manutenção?')) {
+                    const initialLength = simulatedMaintenancePlans.length;
+                    // Filter out the plan to be deleted
+                    const updatedPlans = simulatedMaintenancePlans.filter(plan => plan.id !== planId);
+                    
+                    if (updatedPlans.length < initialLength) {
+                        // If a plan was actually removed, update the array and re-render
+                        simulatedMaintenancePlans.length = 0; // Clear the original array
+                        simulatedMaintenancePlans.push(...updatedPlans); // Push updated items back
+                        alert('Plano de manutenção excluído com sucesso!');
+                        renderRegisteredPlans();
+                    } else {
+                        alert('Erro: Plano não encontrado para exclusão.');
+                    }
+                }
+            };
+
+
+            // --- Notification Logic (assuming vehicle data comes from elsewhere now) ---
+            // For the purpose of this page, the bell icon would primarily react to *plan* due dates,
+            // but for a full system, it would still rely on external vehicle KM/Hours.
+            // Keeping a simplified check based on hypothetical current vehicle states for demo.
+
+            // SIMULATED VEHICLE DATA (FOR ALERT CHECKS ONLY - NOT DISPLAYED ON THIS PAGE)
+            const simulatedVehicles = [
+                { id: 'VEICULO001', placa: 'ABC-1234', modelo: 'Axor 2544', currentKm: 154500, currentHoras: 2500 },
+                { id: 'VEICULO002', placa: 'DEF-5678', modelo: 'CAT 320D', currentKm: 50000, currentHoras: 1890 },
+                { id: 'VEICULO003', placa: 'GHI-9012', modelo: 'Scania R450', currentKm: 329000, currentHoras: 5100 },
+                { id: 'VEICULO004', placa: 'JKL-3456', modelo: 'Fiat Fiorino', currentKm: 87500, currentHoras: 100 },
+            ];
+
+            function checkMaintenanceStatus() {
+                const alerts = [];
+                const thresholdPercentage = 0.05; // 5% of the planned value for "approaching"
+
+                simulatedVehicles.forEach(vehicle => {
+                    simulatedMaintenancePlans.forEach(plan => {
+                        // Check if the plan applies to this vehicle model and alerts are enabled
+                        if (plan.modeloVeiculo === vehicle.modelo && plan.alertarDashboard) {
+                            let isApproaching = false;
+                            let isOverdue = false;
+                            
+                            // Check KM-based plans
+                            if (plan.criterioProgramacao === 'km') {
+                                const kmToNextMaintenance = plan.valorProgramacao - plan.lastMaintenanceReading;
+                                const kmSinceLastMaintenance = vehicle.currentKm - plan.lastMaintenanceReading;
+
+                                // Check if approaching the limit (e.g., 95% of the way to next maintenance)
+                                if (kmSinceLastMaintenance >= kmToNextMaintenance * (1 - thresholdPercentage) && kmSinceLastMaintenance < kmToNextMaintenance) {
+                                    const kmRemaining = plan.valorProgramacao - vehicle.currentKm;
+                                    alerts.push(`O veículo ${vehicle.placa} (${vehicle.modelo}) está se aproximando da manutenção "${plan.nomePlano}". Faltam ${Math.round(kmRemaining).toLocaleString('pt-BR')} KM.`);
+                                    isApproaching = true;
+                                } 
+                                // Check if overdue
+                                else if (kmSinceLastMaintenance >= kmToNextMaintenance) {
+                                    const overdueAmount = vehicle.currentKm - plan.valorProgramacao;
+                                    alerts.push(`⚠️ O veículo ${vehicle.placa} (${vehicle.modelo}) está com a manutenção "${plan.nomePlano}" vencida em ${Math.round(overdueAmount).toLocaleString('pt-BR')} KM.`);
+                                    isOverdue = true;
+                                }
+                            } 
+                            // Check Hours-based plans
+                            else if (plan.criterioProgramacao === 'horas') {
+                                const horasToNextMaintenance = plan.valorProgramacao - plan.lastMaintenanceReading;
+                                const horasSinceLastMaintenance = vehicle.currentHoras - plan.lastMaintenanceReading;
+
+                                // Check if approaching the limit
+                                if (horasSinceLastMaintenance >= horasToNextMaintenance * (1 - thresholdPercentage) && horasSinceLastMaintenance < horasToNextMaintenance) {
+                                    const horasRemaining = plan.valorProgramacao - vehicle.currentHoras;
+                                    alerts.push(`O veículo ${vehicle.placa} (${vehicle.modelo}) está se aproximando da manutenção "${plan.nomePlano}". Faltam ${Math.round(horasRemaining).toLocaleString('pt-BR')} Horas.`);
+                                    isApproaching = true;
+                                } 
+                                // Check if overdue
+                                else if (horasSinceLastMaintenance >= horasToNextMaintenance) {
+                                    const overdueAmount = vehicle.currentHoras - plan.valorProgramacao;
+                                    alerts.push(`⚠️ O veículo ${vehicle.placa} (${vehicle.modelo}) está com a manutenção "${plan.nomePlano}" vencida em ${Math.round(overdueAmount).toLocaleString('pt-BR')} Horas.`);
+                                    isOverdue = true;
+                                }
+                            }
+
+                            // Check for periodic maintenance if applicable (date-based)
+                            if (plan.periodicidade && plan.lastMaintenanceDate) {
+                                const today = new Date();
+                                const lastMaintDate = new Date(plan.lastMaintenanceDate); // Ensure it's a Date object
+
+                                const diffTime = Math.abs(today.getTime() - lastMaintDate.getTime());
+                                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+                                let periodicThresholdDays = 0;
+                                if (plan.periodicidade.toLowerCase().includes('6 meses')) {
+                                    periodicThresholdDays = 182; // Approx 6 months
+                                } else if (plan.periodicidade.toLowerCase().includes('anualmente')) {
+                                    periodicThresholdDays = 365; // Approx 1 year
+                                }
+                                // Add more periodicities as needed for example:
+                                // else if (plan.periodicidade.toLowerCase().includes('trimestralmente')) { periodicThresholdDays = 91; }
+
+                                if (periodicThresholdDays > 0) {
+                                    const daysToDueDate = periodicThresholdDays - diffDays;
+                                    
+                                    // Check approaching periodic maintenance (e.g., 7 days before)
+                                    if (daysToDueDate <= 7 && daysToDueDate > 0) {
+                                        alerts.push(`O veículo ${vehicle.placa} (${vehicle.modelo}) está se aproximando da manutenção periódica "${plan.nomePlano}". Vence em ${daysToDueDate} dias.`);
+                                    }
+                                    // Check if periodic maintenance is overdue
+                                    else if (diffDays > periodicThresholdDays) {
+                                        const daysOverdue = diffDays - periodicThresholdDays;
+                                        alerts.push(`⚠️ O veículo ${vehicle.placa} (${vehicle.modelo}) está com a manutenção periódica "${plan.nomePlano}" vencida há ${daysOverdue} dias.`);
+                                    }
+                                }
+                            }
+                        }
+                    });
+                });
+                displayNotifications(alerts);
+            }
+
+            function displayNotifications(alerts) {
+                const alertCountSpan = document.getElementById('alertCount');
+                const alertListDiv = document.getElementById('alertList');
+
+                if (alerts.length > 0) {
+                    alertCountSpan.textContent = alerts.length;
+                    alertCountSpan.style.display = 'block'; // Show the counter
+                    alertListDiv.innerHTML = ''; // Clear previous alerts
+                    alerts.forEach(alertMsg => {
+                        const p = document.createElement('p');
+                        p.classList.add('text-sm', 'mb-2', 'last:mb-0'); // Add classes for styling
+                        p.textContent = alertMsg;
+                        alertListDiv.appendChild(p);
+                    });
+                } else {
+                    alertCountSpan.style.display = 'none'; // Hide the counter
+                    alertListDiv.innerHTML = '<p class="text-sm text-gray-500">Nenhum alerta no momento.</p>';
+                }
+            }
+
+            // --- Event Listeners for Alert Bell Dropdown ---
+            const alertBellButton = document.getElementById('alertBellButton');
+            const alertDropdown = document.getElementById('alertDropdown');
+
+            alertBellButton.addEventListener('click', function(event) {
+                event.stopPropagation(); // Prevent document click from closing it immediately
+                alertDropdown.classList.toggle('hidden');
+                alertDropdown.classList.toggle('animate-fade-in-down'); // Re-use animation
+                alertBellButton.setAttribute('aria-expanded', alertDropdown.classList.contains('hidden') ? 'false' : 'true');
+            });
+
+            // Close alert dropdown when clicking outside
+            document.addEventListener('click', function(event) {
+                if (!alertDropdown.contains(event.target) && !alertBellButton.contains(event.target)) {
+                    alertDropdown.classList.add('hidden');
+                    alertDropdown.classList.remove('animate-fade-in-down');
+                    alertBellButton.setAttribute('aria-expanded', 'false');
+                }
+            });
+
+            alertDropdown.addEventListener('click', function(event) {
+                event.stopPropagation(); // Prevent clicks inside dropdown from closing it
+            });
+
+            // Initial check on page load
+            checkMaintenanceStatus();
+
+            function logout() {
+                alert('Você foi desconectado.'); // Replace with actual logout logic
+                window.location.href = 'login.html'; // Redirect to login page
+            }
+
+        }); // End DOMContentLoaded
+    </script>
+</body>
+</html>

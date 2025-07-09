@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cadastro de Marca - BFM Frotas</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f0f4f8; /* Light background for a clean look */
+            color: #2c3e50; /* Darker text for readability */
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased; /* Smoother font rendering */
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* Custom animation for dropdown fade-in (downwards) */
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in-down {
+            animation: fadeInDown 0.3s ease-out forwards;
+            transform-origin: top;
+        }
+
+        /* Custom animation for submenu fade-in (sideways) */
+        @keyframes fadeInRight {
+            from { opacity: 0; transform: translateX(-10px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        .animate-fade-in-right {
+            animation: fadeInRight 0.3s ease-out forwards;
+            transform-origin: left;
+        }
+
+        /* Custom scrollbar styling for a consistent look */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background-color: rgb(20, 139, 36); /* Semi-transparent primary green */
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(26, 77, 62, 0.1); /* Lighter track */
+        }
+
+        /* Base dropdown item styling */
+        .dropdown-item {
+            padding: 0.75rem 1.5rem;
+            color: #374151; /* gray-700 */
+            font-weight: 500;
+            white-space: nowrap;
+            display: block; /* Ensure it takes full width */
+            width: 100%;
+            text-align: left;
+            transition: background-color 0.2s ease, color 0.2s ease;
+        }
+
+        .dropdown-item:hover {
+            background-color: #e0f2f7; /* lighter blue/greenish hue for hover */
+            color: #1e7e15; /* primary green for hover text */
+        }
+
+        /* Specific styling for nested submenu trigger buttons */
+        .submenu-trigger {
+            width: 100%;
+            text-align: left;
+            padding: 0.75rem 1.5rem;
+            color: #374151;
+            font-weight: 500;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: transparent; /* Reset button default bg */
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.2s ease, color 0.2s ease;
+        }
+
+        .submenu-trigger:hover {
+            background-color: #e0f2f7;
+            color: #0da326;
+        }
+
+        /* Styles for dropdown content (main menus) */
+        .dropdown-content {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* shadow-xl */
+        }
+
+        /* Styles for submenu content (nested menus) */
+        .submenu-content {
+            position: absolute;
+            top: 0;
+            left: 100%; /* Opens to the right */
+            min-width: 220px;
+            background-color: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            z-index: 10000; /* Ensure it's above other elements */
+            display: flex;
+            flex-direction: column;
+            border-left: 1px solid #e2e8f0; /* Small border for visual separation */
+        }
+
+        /* Adjust caret rotation for main dropdowns */
+        .ph-caret-down {
+            transition: transform 0.2s ease-in-out;
+        }
+        .menu-link[aria-expanded="true"] .ph-caret-down {
+            transform: rotate(180deg); /* Rotates up when open */
+        }
+
+        /* Adjust caret rotation for submenus */
+        .ph-caret-right {
+            transition: transform 0.2s ease-in-out;
+        }
+        .submenu-trigger[aria-expanded="true"] .ph-caret-right {
+            transform: rotate(90deg); /* Rotates down when open (if opening right) */
+        }
+
+        /* Active menu styling */
+        .active-menu {
+            color: #facc15 !important; /* yellow-300 */
+            border-bottom: 4px solid #facc15 !important; /* yellow-300 */
+        }
+
+        /* Responsive adjustments for mobile */
+        @media (max-width: 767px) { /* Tailind's md breakpoint is 768px */
+            .md\:flex-row {
+                flex-direction: column;
+            }
+            .md\:mb-0 {
+                margin-bottom: 1rem; /* Adjust margin for mobile brand */
+            }
+            .nav {
+                width: 100%;
+                flex-direction: column;
+                align-items: flex-start;
+                padding-top: 1rem;
+            }
+            .menu-link, .dropdown > button {
+                width: 100%;
+                text-align: left;
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+
+            /* Main dropdowns revert to full width and relative positioning for mobile */
+            .dropdown-content {
+                position: static !important; /* Override absolute for mobile */
+                width: 100%;
+                border-radius: 0;
+                box-shadow: none;
+                border-top: 1px solid #e2e8f0; /* Add a subtle divider */
+                padding-left: 1rem; /* Indent dropdown items */
+            }
+            /* Submenus also revert to full width and static positioning for mobile */
+            .submenu-content {
+                position: static !important; /* Override absolute for mobile */
+                width: 100%;
+                border-radius: 0;
+                box-shadow: none;
+                border-left: none; /* Remove left border */
+                border-top: 1px solid #e2e8f0; /* Add a subtle divider */
+                padding-left: 2rem; /* Further indent nested items */
+            }
+
+            .ph-caret-down, .ph-caret-right {
+                transform: rotate(0deg) !important; /* Reset rotation for mobile */
+            }
+            .menu-link[aria-expanded="true"] .ph-caret-down,
+            .submenu-trigger[aria-expanded="true"] .ph-caret-right {
+                transform: rotate(180deg) !important; /* Still rotate down for consistency in mobile dropdowns */
+            }
+        }
+
+        /* Form styling */
+        .form-container, .list-container {
+            background-color: #ffffff;
+            padding: 2.5rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            margin-bottom: 2rem; /* Consistent spacing */
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #334155; /* slate-700 */
+        }
+
+        .form-group input[type="text"] {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid #cbd5e1; /* slate-300 */
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            color: #475569; /* slate-700 */
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .form-group input[type="text"]:focus {
+            outline: none;
+            border-color: #16a34a; /* green-600 */
+            box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.2); /* green-600 with opacity */
+        }
+
+        .btn-submit {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            width: auto; /* Adjusted to auto for content fitting */
+            padding: 1rem 1.5rem;
+            background-color: #16a34a; /* green-600 */
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 1.125rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background-color 0.2s ease, transform 0.1s ease;
+            margin-top: 2rem;
+        }
+
+        .btn-submit:hover {
+            background-color: #15803d; /* green-700 */
+            transform: translateY(-1px);
+        }
+
+        .btn-submit:active {
+            transform: translateY(0);
+        }
+
+        /* List Table Styling */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1.5rem;
+        }
+
+        .data-table th, .data-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0; /* Light border */
+        }
+
+        .data-table th {
+            background-color: #f1f5f9; /* slate-100 */
+            color: #334155; /* slate-700 */
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.875rem;
+        }
+
+        .data-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .data-table tbody tr:hover {
+            background-color: #f8fafc; /* Very light hover effect */
+        }
+
+        /* Action Buttons within Table */
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-edit {
+            background-color: #3b82f6; /* blue-500 */
+            color: white;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.375rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        .btn-edit:hover {
+            background-color: #2563eb; /* blue-600 */
+        }
+
+        .btn-delete {
+            background-color: #ef4444; /* red-500 */
+            color: white;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.375rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        .btn-delete:hover {
+            background-color: #dc2626; /* red-600 */
+        }
+
+        /* Modal Specific Styles */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10001; /* Above other elements */
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .modal.open {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background-color: #ffffff;
+            padding: 2.5rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            width: 90%;
+            max-width: 500px; /* Adjusted max width for modals */
+            max-height: 90vh; /* Limit height to prevent overflow */
+            overflow-y: auto; /* Enable scrolling for long forms */
+            position: relative;
+            transform: translateY(-20px);
+            transition: transform 0.3s ease;
+        }
+
+        .modal.open .modal-content {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 1rem;
+        }
+
+        .modal-header h2 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #16a34a;
+        }
+
+        .modal-close-button {
+            background: none;
+            border: none;
+            font-size: 2rem;
+            cursor: pointer;
+            color: #64748b; /* slate-500 */
+            transition: color 0.2s ease;
+        }
+
+        .modal-close-button:hover {
+            color: #334155; /* slate-700 */
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-top: 2rem;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 1.5rem;
+        }
+
+        .btn-cancel {
+            background-color: #64748b; /* slate-500 */
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            border: none;
+        }
+
+        .btn-cancel:hover {
+            background-color: #475569; /* slate-700 */
+        }
+
+        .btn-save-modal {
+            background-color: #16a34a; /* green-600 */
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            border: none;
+        }
+
+        .btn-save-modal:hover {
+            background-color: #15803d; /* green-700 */
+        }
+
+        /* Feedback Message (Toast) */
+        #feedbackMessage {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            color: white;
+            z-index: 10002;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+        }
+
+        #feedbackMessage.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        #feedbackMessage.bg-green-500 { background-color: #22c55e; }
+        #feedbackMessage.bg-red-500 { background-color: #ef4444; }
+        #feedbackMessage.bg-blue-500 { background-color: #3b82f6; }
+
+    </style>
+</head>
+<body class="overflow-x-hidden">
+
+    <header class="bg-green-700 text-white p-4 flex flex-col md:flex-row items-center justify-between shadow-lg sticky top-0 z-50 rounded-b-xl">
+        <div class="font-extrabold text-3xl tracking-wider select-none mb-4 md:mb-0" tabindex="0">
+            <span class="text-white">EFM</span><span class="text-yellow-300"> FROTAS</span>
+        </div>
+        <nav class="flex flex-wrap gap-x-4 gap-y-2 items-center justify-center" role="navigation" aria-label="Menu principal">
+            <a href="dashboard.html" class="menu-link text-white font-semibold text-base py-2 px-2 relative whitespace-nowrap border-b-4 border-transparent hover:text-yellow-300 hover:border-yellow-300 transition">
+                Dashboard
+            </a>
+            <div class="relative dropdown" id="dropdown-configuracoes">
+                <button class="menu-link text-white font-semibold text-base py-2 px-2 hover:text-yellow-300 hover:border-yellow-300 border-b-4 border-transparent transition flex items-center gap-1" type="button" aria-haspopup="true" aria-expanded="false">
+                    Configurações
+                    <i class="ph ph-caret-down ml-1"></i>
+                </button>
+                <div id="menu-configuracoes" class="dropdown-content hidden absolute top-full left-0 bg-white rounded-xl shadow-xl min-w-[220px] z-[9999] flex-col">
+                    <div class="relative group" id="dropdown-veiculos-submenu">
+                        <button class="submenu-trigger" type="button" aria-haspopup="true" aria-expanded="false">
+                            Veículos
+                            <i class="ph ph-caret-right ml-2"></i>
+                        </button>
+                        <div id="menu-veiculos-submenu" class="submenu-content hidden">
+                            <a href="cadastroveiculos.html" class="dropdown-item">Cadastro de Veículos</a>
+                            <a href="cadastro_combustivel.html" class="dropdown-item">Cadastro de Combustível</a>
+                            <a href="cadastro_marcas.html" class="dropdown-item">Cadastro de Marcas</a>
+                            <a href="cadastro_modelo.html" class="dropdown-item">Cadastro de Modelo</a>
+                            <a href="anexosdocumentos.html" class="dropdown-item">Anexar Documento</a>
+                        </div>
+                    </div>
+                    <div class="relative group" id="dropdown-servicos-submenu">
+                        <button class="submenu-trigger" type="button" aria-haspopup="true" aria-expanded="false">
+                            Serviços
+                            <i class="ph ph-caret-right ml-2"></i>
+                        </button>
+                        <div id="menu-servicos-submenu" class="submenu-content hidden">
+                            <a href="cadastro-compartimentos.html" class="dropdown-item">Cadastro de Compartimentos</a>
+                            <a href="cadastro_acoes.html" class="dropdown-item">Cadastro de Ações</a>
+                        </div>
+                    </div>
+                    <a href="cadastro_tecnicos.html" class="dropdown-item">Cadastro de Técnicos</a>
+                    <a href="fornecedor.html" class="dropdown-item">Cadastro de Fornecedores</a>
+                    <a href="cadastro_periodicidade.html" class="dropdown-item">Cadastro de Periodicidade</a>
+                    <a href="oficinas.html" class="dropdown-item">Cadastro de Oficina</a>
+                    <a href="controlehodometrohorimetro.html" class="dropdown-item">Controle de Hodômetro/Horímetro</a>
+                </div>
+            </div>
+            <div class="relative dropdown" id="dropdown-plano">
+                <button class="menu-link text-white font-semibold text-base py-2 px-2 hover:text-yellow-300 hover:border-yellow-300 border-b-4 border-transparent transition flex items-center gap-1" type="button" aria-haspopup="true" aria-expanded="false">
+                    Plano de Manutenção
+                    <i class="ph ph-caret-down ml-1"></i>
+                </button>
+                <div id="menu-plano" class="dropdown-content hidden absolute top-full left-0 bg-white rounded-xl shadow-xl min-w-[220px] flex-col z-[9999]">
+                    <a href="pmp.html" class="dropdown-item">PMP - Preventiva</a>
+                    <a href="PL.html" class="dropdown-item">PL - Lubrificação</a>
+                </div>
+            </div>
+            <div class="relative dropdown" id="dropdown-os">
+                <button class="menu-link text-white font-semibold text-base py-2 px-2 hover:text-yellow-300 hover:border-yellow-300 border-b-4 border-transparent transition flex items-center gap-1" type="button" aria-haspopup="true" aria-expanded="false">
+                    Ordem de Serviço
+                    <i class="ph ph-caret-down ml-1"></i>
+                </button>
+                <div id="menu-os" class="dropdown-content hidden absolute top-full left-0 bg-white rounded-xl shadow-xl min-w-[220px] flex-col z-[9999]">
+                    <a href="agendamento.html" class="dropdown-item">Gerar Ordem de Serviço</a>
+                </div>
+            </div>
+            <div class="relative dropdown" id="dropdown-gerenciamento">
+                <button class="menu-link text-white font-semibold text-base py-2 px-2 hover:text-yellow-300 hover:border-yellow-300 border-b-4 border-transparent transition flex items-center gap-1" type="button" aria-haspopup="true" aria-expanded="false">
+                    Gerenciamento
+                    <i class="ph ph-caret-down ml-1"></i>
+                </button>
+                <div id="menu-gerenciamento" class="dropdown-content hidden absolute top-full left-0 bg-white rounded-xl shadow-xl min-w-[220px] flex-col z-[9999]">
+                    <a href="controle.html" class="dropdown-item">Controle</a>
+                    <a href="visaodafrota.html" class="dropdown-item">Visão Geral de Frota</a>
+                </div>
+            </div>
+            <a href="seguranca.html" class="menu-link text-white font-semibold text-base py-2 px-2 hover:text-yellow-300 hover:border-yellow-300 border-b-4 border-transparent transition">
+                Segurança
+            </a>
+            <div class="relative dropdown" id="dropdown-alerts">
+                <button class="menu-link text-white font-semibold text-base py-2 px-2 hover:text-yellow-300 hover:border-yellow-300 border-b-4 border-transparent transition flex items-center gap-1" type="button" aria-haspopup="true" aria-expanded="false" id="alertBellButton">
+                    <i class="ph ph-bell text-xl"></i>
+                    <span id="alertCount" class="bg-red-500 text-white text-xs font-bold rounded-full px-2 py-1 -mt-4 -mr-4 absolute top-1/2 left-1/2 transform translate-x-1/4 -translate-y-1/4" style="display: none;">0</span>
+                </button>
+                <div id="alertDropdown" class="dropdown-content hidden absolute top-full right-0 bg-white rounded-xl shadow-xl min-w-[300px] flex-col z-[9999] p-4">
+                    <h3 class="text-lg font-bold text-gray-800 mb-2">Notificações</h3>
+                    <div id="alertList" class="text-gray-700">
+                        <p class="text-sm text-gray-500">Nenhum alerta no momento.</p>
+                    </div>
+                </div>
+            </div>
+            <a href="#" onclick="logout()" class="menu-link text-white font-semibold text-base py-2 px-2 relative whitespace-nowrap border-b-4 border-transparent hover:text-yellow-300 hover:border-yellow-300 transition">
+                Sair
+            </a>
+        </nav>
+    </header>
+    <main class="flex-grow container mx-auto p-4 sm:p-6 lg:p-8 max-w-4xl">
+        <div class="flex items-center justify-between mb-6">
+            <h1 class="text-3xl font-bold text-gray-800">Cadastro de Marcas</h1>
+        </div>
+
+        <div id="marcaForm" class="form-container">
+            <h2 class="text-2xl font-semibold text-gray-700 mb-6">Nova Marca</h2>
+            <form id="addMarcaForm" class="grid grid-cols-1 gap-y-4">
+                <div class="form-group">
+                    <label for="nomeMarca">Nome da Marca</label>
+                    <input type="text" id="nomeMarca" placeholder="Ex: Ford" required />
+                </div>
+                <div class="flex justify-end">
+                    <button type="submit" class="btn-submit">
+                        <i class="ph ph-plus-circle text-xl"></i>
+                        Cadastrar Marca
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div class="list-container mt-8">
+            <h2 class="text-2xl font-semibold text-gray-700 mb-6">Marcas Cadastradas</h2>
+            <div id="marcasList">
+                <p id="noMarcasMessage" class="text-gray-500 text-center hidden">Nenhuma marca cadastrada.</p>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Nome da Marca</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <div id="editMarcaModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="text-2xl font-bold text-green-600">Editar Marca</h2>
+                <button type="button" class="modal-close-button" onclick="closeEditMarcaModal()">
+                    <i class="ph ph-x"></i>
+                </button>
+            </div>
+            <form id="editMarcaForm">
+                <input type="hidden" id="editMarcaId" />
+                <div class="form-group mb-4">
+                    <label for="editNomeMarca">Nome da Marca</label>
+                    <input type="text" id="editNomeMarca" class="w-full px-4 py-2 border rounded-lg text-gray-700 focus:outline-none focus:border-green-500" required />
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-cancel" onclick="closeEditMarcaModal()">Cancelar</button>
+                    <button type="submit" class="btn-save-modal">Salvar Alterações</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="confirmModal" class="modal">
+        <div class="modal-content max-w-sm text-center">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">Confirmar Exclusão</h2>
+            <p id="confirmModalMessage" class="text-gray-600 mb-6">Tem certeza que deseja excluir esta marca?</p>
+            <div class="flex justify-center gap-4">
+                <button id="confirmModalNo" class="btn-cancel">Não</button>
+                <button id="confirmModalYes" class="btn-delete">Sim</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="feedbackMessage" class="hidden">
+        Mensagem de Feedback
+    </div>
+
+    <script>
+        // --- FUNÇÕES DE ARMAZENAMENTO DE DADOS (LocalStorage) ---
+        function getBFMFleetData() {
+            const data = localStorage.getItem('bfmFleetData');
+            return data ? JSON.parse(data) : {
+                vehicles: [],
+                compartments: [],
+                brands: [],
+                fuels: [],
+                models: [],
+                technicians: [],
+                suppliers: [],
+                periodicities: [],
+                workshops: [],
+                hodometerHorimeter: [],
+                maintenancePlans: [],
+                serviceOrders: [],
+                customCompartmentTypes: [],
+                actions: []
+            };
+        }
+
+        function saveBFMFleetData(data) {
+            localStorage.setItem('bfmFleetData', JSON.stringify(data));
+        }
+
+        // --- Variáveis Globais para Marcas ---
+        let marcas = getBFMFleetData().brands || [];
+        let editingMarcaId = null;
+        let marcaIdToDelete = null;
+
+        // --- Elementos do DOM ---
+        const addMarcaForm = document.getElementById('addMarcaForm');
+        const nomeMarcaInput = document.getElementById('nomeMarca');
+        const marcasListTbody = document.querySelector('#marcasList tbody'); // Seleciona o tbody da tabela
+        const noMarcasMessage = document.getElementById('noMarcasMessage');
+        const editMarcaModal = document.getElementById('editMarcaModal');
+        const editMarcaForm = document.getElementById('editMarcaForm');
+        const editNomeMarcaInput = document.getElementById('editNomeMarca');
+        const editMarcaIdInput = document.getElementById('editMarcaId');
+        const confirmModal = document.getElementById('confirmModal');
+        const confirmModalNo = document.getElementById('confirmModalNo');
+        const confirmModalYes = document.getElementById('confirmModalYes');
+        const feedbackMessage = document.getElementById('feedbackMessage');
+
+        // --- FUNÇÕES DE FEEDBACK ---
+        function showFeedback(message, type = 'success') {
+            feedbackMessage.textContent = message;
+            feedbackMessage.className = `fixed bottom-6 right-6 px-6 py-3 rounded-lg shadow-xl text-white z-50 transition-all duration-300 ${type === 'success' ? 'bg-green-500' : type === 'error' ? 'bg-red-500' : 'bg-blue-500'} show`;
+            setTimeout(() => {
+                feedbackMessage.classList.remove('show');
+                setTimeout(() => feedbackMessage.classList.add('hidden'), 300); // Esconde após animação
+            }, 3000);
+        }
+
+        // --- FUNÇÕES DE RENDERIZAÇÃO DE MARCAS ---
+        function renderMarcas() {
+            marcas = getBFMFleetData().brands || [];
+            marcasListTbody.innerHTML = ''; // Limpa o corpo da tabela
+
+            if (marcas.length === 0) {
+                noMarcasMessage.classList.remove('hidden');
+                marcasListTbody.closest('table').classList.add('hidden'); // Esconde a tabela se não houver marcas
+                return;
+            }
+            noMarcasMessage.classList.add('hidden');
+            marcasListTbody.closest('table').classList.remove('hidden'); // Mostra a tabela se houver marcas
+
+            marcas.forEach(marca => {
+                const row = marcasListTbody.insertRow();
+                row.innerHTML = `
+                    <td>${marca.nome}</td>
+                    <td class="action-buttons">
+                        <button class="btn-edit" onclick="openEditMarcaModal(${marca.id})">
+                            <i class="ph ph-pencil"></i> Editar
+                        </button>
+                        <button class="btn-delete" onclick="confirmDeleteMarca(${marca.id})">
+                            <i class="ph ph-trash"></i> Excluir
+                        </button>
+                    </td>
+                `;
+            });
+        }
+
+        // --- FUNÇÕES DO FORMULÁRIO DE CADASTRO ---
+        addMarcaForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const nome = nomeMarcaInput.value.trim();
+
+            if (!nome) {
+                showFeedback('Por favor, insira o nome da marca.', 'error');
+                return;
+            }
+
+            if (marcas.some(m => m.nome.toLowerCase() === nome.toLowerCase())) {
+                showFeedback('Esta marca já está cadastrada.', 'error');
+                return;
+            }
+
+            const novaMarca = {
+                id: Date.now(),
+                nome: nome
+            };
+
+            let bfmData = getBFMFleetData();
+            bfmData.brands.push(novaMarca);
+            saveBFMFleetData(bfmData);
+            marcas = bfmData.brands;
+
+            showFeedback('Marca cadastrada com sucesso!', 'success');
+            nomeMarcaInput.value = '';
+            renderMarcas();
+        });
+
+        // --- FUNÇÕES DO MODAL DE EDIÇÃO ---
+        function openEditMarcaModal(id) {
+            const marca = marcas.find(m => m.id === id);
+            if (marca) {
+                editingMarcaId = id;
+                editMarcaIdInput.value = marca.id;
+                editNomeMarcaInput.value = marca.nome;
+                editMarcaModal.classList.add('open');
+                editMarcaModal.classList.remove('hidden'); // Ensure it's not hidden
+            }
+        }
+
+        function closeEditMarcaModal() {
+            editMarcaModal.classList.remove('open');
+            editMarcaModal.classList.add('hidden'); // Hide after animation
+            editingMarcaId = null;
+            editMarcaForm.reset();
+        }
+
+        editMarcaForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const id = parseInt(editMarcaIdInput.value);
+            const novoNome = editNomeMarcaInput.value.trim();
+
+            if (!novoNome) {
+                showFeedback('Por favor, insira o novo nome da marca.', 'error');
+                return;
+            }
+
+            if (marcas.some(m => m.nome.toLowerCase() === novoNome.toLowerCase() && m.id !== id)) {
+                showFeedback('Já existe outra marca com este nome.', 'error');
+                return;
+            }
+
+            let bfmData = getBFMFleetData();
+            const marcaIndex = bfmData.brands.findIndex(m => m.id === id);
+            if (marcaIndex > -1) {
+                bfmData.brands[marcaIndex].nome = novoNome;
+                saveBFMFleetData(bfmData);
+                marcas = bfmData.brands;
+                showFeedback('Marca atualizada com sucesso!', 'success');
+                renderMarcas();
+                closeEditMarcaModal();
+            } else {
+                showFeedback('Marca não encontrada.', 'error');
+            }
+        });
+
+        // --- FUNÇÕES DO MODAL DE CONFIRMAÇÃO DE EXCLUSÃO ---
+        function confirmDeleteMarca(id) {
+            const bfmData = getBFMFleetData();
+            const vehicles = bfmData.vehicles || []; // Get vehicles data
+            
+            // Check if any vehicle uses this brand
+            const marcaEmUso = vehicles.some(vehicle => vehicle.marcaId === id); // Assuming 'marcaId' in vehicle object
+
+            if (marcaEmUso) {
+                showFeedback('Esta marca não pode ser excluída porque está vinculada a um ou mais veículos.', 'error');
+                return; // Prevent opening confirmation modal if in use
+            }
+
+            marcaIdToDelete = id;
+            const marca = marcas.find(m => m.id === id);
+            document.getElementById('confirmModalMessage').textContent = `Tem certeza que deseja excluir a marca "${marca ? marca.nome : ''}"?`;
+            confirmModal.classList.add('open');
+            confirmModal.classList.remove('hidden'); // Ensure it's not hidden
+        }
+
+        function deleteMarca() {
+            if (marcaIdToDelete !== null) {
+                let bfmData = getBFMFleetData();
+                bfmData.brands = bfmData.brands.filter(m => m.id !== marcaIdToDelete);
+                saveBFMFleetData(bfmData);
+                marcas = bfmData.brands;
+                renderMarcas();
+                showFeedback('Marca excluída com sucesso!', 'success');
+                closeConfirmModal();
+            }
+        }
+
+        function closeConfirmModal() {
+            confirmModal.classList.remove('open');
+            confirmModal.classList.add('hidden'); // Hide after animation
+            marcaIdToDelete = null;
+        }
+
+        confirmModalNo.addEventListener('click', closeConfirmModal);
+        confirmModalYes.addEventListener('click', deleteMarca);
+
+        // --- FUNÇÕES DE GERENCIAMENTO DO HEADER (DROPDOWNS) ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const dropdowns = document.querySelectorAll('.dropdown');
+
+            dropdowns.forEach(dropdown => {
+                const button = dropdown.querySelector('button[aria-haspopup="true"]');
+                const menu = dropdown.querySelector('.dropdown-content'); // Main dropdown content
+
+                if (button && menu) {
+                    let timeoutId;
+
+                    const openMenu = () => {
+                        clearTimeout(timeoutId);
+                        closeAllOtherMenus(dropdown); // Close other main dropdowns
+                        menu.classList.remove('hidden');
+                        menu.classList.add('animate-fade-in-down', 'flex');
+                        button.setAttribute('aria-expanded', 'true');
+                        dropdown.classList.add('active'); // Add active class to main dropdown
+                    };
+
+                    const closeMenu = () => {
+                        timeoutId = setTimeout(() => {
+                            menu.classList.remove('animate-fade-in-down', 'flex');
+                            menu.classList.add('hidden');
+                            button.setAttribute('aria-expanded', 'false');
+                            dropdown.classList.remove('active'); // Remove active class
+                        }, 100); // Pequeno delay para permitir cliques nos itens
+                    };
+
+                    // Event listeners for main dropdowns
+                    button.addEventListener('mouseenter', openMenu);
+                    dropdown.addEventListener('mouseleave', closeMenu);
+                    menu.addEventListener('mouseenter', () => clearTimeout(timeoutId)); // Keep open if mouse enters menu
+
+                    // Handling nested submenus
+                    const submenuTriggers = dropdown.querySelectorAll('.submenu-trigger');
+                    submenuTriggers.forEach(submenuTrigger => {
+                        const submenuContent = submenuTrigger.nextElementSibling; // Get the next sibling (submenu content)
+
+                        if (submenuContent && submenuContent.classList.contains('submenu-content')) {
+                            let submenuTimeoutId;
+
+                            const openSubmenu = () => {
+                                clearTimeout(submenuTimeoutId);
+                                if (window.innerWidth >= 768) { // Desktop hover behavior
+                                    submenuContent.classList.remove('hidden');
+                                    submenuContent.classList.add('animate-fade-in-right', 'flex');
+                                    submenuTrigger.setAttribute('aria-expanded', 'true');
+                                }
+                            };
+
+                            const closeSubmenu = () => {
+                                submenuTimeoutId = setTimeout(() => {
+                                    if (window.innerWidth >= 768) { // Desktop hover behavior
+                                        submenuContent.classList.remove('animate-fade-in-right', 'flex');
+                                        submenuContent.classList.add('hidden');
+                                        submenuTrigger.setAttribute('aria-expanded', 'false');
+                                    }
+                                }, 50);
+                            };
+
+                            // Desktop: Hover for submenus
+                            if (window.innerWidth >= 768) {
+                                submenuTrigger.addEventListener('mouseenter', openSubmenu);
+                                submenuTrigger.parentElement.addEventListener('mouseleave', closeSubmenu); // Listen on parent 'group'
+                                submenuContent.addEventListener('mouseenter', () => clearTimeout(submenuTimeoutId));
+                            }
+
+                            // Mobile: Click to toggle submenus
+                            submenuTrigger.addEventListener('click', (e) => {
+                                e.stopPropagation(); // Prevent main dropdown from closing
+                                if (window.innerWidth < 768) {
+                                    submenuContent.classList.toggle('hidden');
+                                    submenuContent.classList.toggle('flex');
+                                    const isExpanded = submenuTrigger.getAttribute('aria-expanded') === 'true';
+                                    submenuTrigger.setAttribute('aria-expanded', !isExpanded);
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+
+            // Close all dropdowns except the current one being opened
+            function closeAllOtherMenus(currentDropdown = null) {
+                document.querySelectorAll('.dropdown').forEach(dropdown => {
+                    if (dropdown !== currentDropdown) {
+                        const menu = dropdown.querySelector('.dropdown-content');
+                        const button = dropdown.querySelector('button[aria-haspopup="true"]');
+                        if (menu && button && !menu.classList.contains('hidden')) {
+                            menu.classList.add('hidden');
+                            menu.classList.remove('animate-fade-in-down', 'flex');
+                            button.setAttribute('aria-expanded', 'false');
+                            dropdown.classList.remove('active');
+
+                            // Close all submenus within this dropdown
+                            const submenus = dropdown.querySelectorAll('.submenu-content');
+                            submenus.forEach(submenu => {
+                                submenu.classList.add('hidden');
+                                submenu.classList.remove('animate-fade-in-right', 'flex');
+                                const submenuTrigger = submenu.previousElementSibling;
+                                if(submenuTrigger && submenuTrigger.classList.contains('submenu-trigger')) {
+                                    submenuTrigger.setAttribute('aria-expanded', 'false');
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+
+            // Close all dropdowns when clicking anywhere else on the document
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.dropdown')) {
+                    closeAllOtherMenus();
+                }
+            });
+
+
+            // Ajustar o active-menu com base na página atual
+            const currentPath = window.location.pathname.split('/').pop();
+            document.querySelectorAll('.menu-link, .dropdown-item').forEach(link => {
+                if (link.getAttribute('href') === currentPath) {
+                    link.classList.add('active-menu');
+                    // Para menus drop-down, adicione a classe 'active-menu' ao botão pai
+                    let parentDropdownButton = link.closest('.dropdown')?.querySelector('button[aria-haspopup="true"]');
+                    if (parentDropdownButton) {
+                        parentDropdownButton.classList.add('active-menu');
+                    }
+                    // Para submenus, adicione a classe 'active-menu' ao trigger do submenu
+                    let parentSubmenuTrigger = link.closest('.submenu-content')?.previousElementSibling;
+                    if (parentSubmenuTrigger && parentSubmenuTrigger.classList.contains('submenu-trigger')) {
+                        parentSubmenuTrigger.classList.add('active-menu');
+                    }
+                } else {
+                    link.classList.remove('active-menu');
+                }
+            });
+
+            // Gerenciamento de Alertas (Exemplo Básico)
+            const alertBellButton = document.getElementById('alertBellButton');
+            const alertDropdown = document.getElementById('alertDropdown');
+            const alertList = document.getElementById('alertList');
+            const alertCountSpan = document.getElementById('alertCount');
+            let alerts = [];
+
+            function updateAlertsDisplay() {
+                alertList.innerHTML = '';
+                if (alerts.length === 0) {
+                    alertList.innerHTML = '<p class="text-sm text-gray-500">Nenhum alerta no momento.</p>';
+                    alertCountSpan.style.display = 'none';
+                } else {
+                    alerts.forEach((alert, index) => {
+                        const alertItem = document.createElement('div');
+                        alertItem.className = 'flex items-center justify-between p-2 hover:bg-gray-50 rounded-md';
+                        alertItem.innerHTML = `
+                            <p class="text-sm text-gray-700">${alert.message}</p>
+                            <button class="text-gray-400 hover:text-gray-700 ml-2" onclick="removeAlert(${index})">
+                                <i class="ph ph-x"></i>
+                            </button>
+                        `;
+                        alertList.appendChild(alertItem);
+                    });
+                    alertCountSpan.textContent = alerts.length;
+                    alertCountSpan.style.display = 'block';
+                }
+            }
+
+            window.removeAlert = function(index) {
+                alerts.splice(index, 1);
+                updateAlertsDisplay();
+            };
+
+            alertBellButton.addEventListener('click', (e) => {
+                e.stopPropagation();
+                alertDropdown.classList.toggle('hidden');
+                alertDropdown.classList.toggle('flex');
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!alertBellButton.contains(e.target) && !alertDropdown.contains(e.target)) {
+                    alertDropdown.classList.add('hidden');
+                    alertDropdown.classList.remove('flex');
+                }
+            });
+
+            window.logout = function() {
+                if (confirm('Tem certeza que deseja sair?')) {
+                    localStorage.clear();
+                    // window.location.href = 'login.html';
+                    alert('Usuário desconectado!');
+                }
+            };
+        });
+
+        // --- INITIAL LOAD AND SETUP ---
+        document.addEventListener('DOMContentLoaded', () => {
+            renderMarcas(); // Initial rendering of the table
+        });
+    </script>
+</body>
+</html>

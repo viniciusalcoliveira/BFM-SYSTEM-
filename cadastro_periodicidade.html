@@ -1,0 +1,1255 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cadastro de Periodicidade - BFM Frotas</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f0f4f8; /* Light background for a clean look */
+            color: #2c3e50; /* Darker text for readability */
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased; /* Smoother font rendering */
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* Custom animation for dropdown fade-in (downwards) */
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in-down {
+            animation: fadeInDown 0.3s ease-out forwards;
+            transform-origin: top;
+        }
+
+        /* Custom animation for submenu fade-in (sideways) */
+        @keyframes fadeInRight {
+            from { opacity: 0; transform: translateX(-10px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        .animate-fade-in-right {
+            animation: fadeInRight 0.3s ease-out forwards;
+            transform-origin: left;
+        }
+
+        /* Custom scrollbar styling for a consistent look */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background-color: rgb(20, 139, 36); /* Semi-transparent primary green */
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(26, 77, 62, 0.1); /* Lighter track */
+        }
+
+        /* Base dropdown item styling */
+        .dropdown-item {
+            padding: 0.75rem 1.5rem;
+            color: #374151; /* gray-700 */
+            font-weight: 500;
+            white-space: nowrap;
+            display: block; /* Ensure it takes full width */
+            width: 100%;
+            text-align: left;
+            transition: background-color 0.2s ease, color 0.2s ease;
+        }
+
+        .dropdown-item:hover {
+            background-color: #e0f2f7; /* lighter blue/greenish hue for hover */
+            color: #1e7e15; /* primary green for hover text */
+        }
+
+        /* Specific styling for nested submenu trigger buttons */
+        .submenu-trigger {
+            width: 100%;
+            text-align: left;
+            padding: 0.75rem 1.5rem;
+            color: #374151;
+            font-weight: 500;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: transparent; /* Reset button default bg */
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.2s ease, color 0.2s ease;
+        }
+
+        .submenu-trigger:hover {
+            background-color: #e0f2f7;
+            color: #0da326;
+        }
+
+        /* Styles for dropdown content (main menus) */
+        .dropdown-content {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* shadow-xl */
+        }
+
+        /* Styles for submenu content (nested menus) */
+        .submenu-content {
+            position: absolute;
+            top: 0;
+            left: 100%; /* Opens to the right */
+            min-width: 220px;
+            background-color: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            z-index: 10000; /* Ensure it's above other elements */
+            display: flex;
+            flex-direction: column;
+            border-left: 1px solid #e2e8f0; /* Small border for visual separation */
+        }
+
+        /* Adjust caret rotation for main dropdowns */
+        .ph-caret-down {
+            transition: transform 0.2s ease-in-out;
+        }
+        .menu-link[aria-expanded="true"] .ph-caret-down {
+            transform: rotate(180deg); /* Rotates up when open */
+        }
+
+        /* Adjust caret rotation for submenus */
+        .ph-caret-right {
+            transition: transform 0.2s ease-in-out;
+        }
+        .submenu-trigger[aria-expanded="true"] .ph-caret-right {
+            transform: rotate(90deg); /* Rotates down when open (if opening right) */
+        }
+
+        /* Active menu styling */
+        .active-menu {
+            color: #facc15 !important; /* yellow-300 */
+            border-bottom: 4px solid #facc15 !important; /* yellow-300 */
+        }
+
+        /* Responsive adjustments for mobile */
+        @media (max-width: 767px) { /* Tailind's md breakpoint is 768px */
+            .md\:flex-row {
+                flex-direction: column;
+            }
+            .md\:mb-0 {
+                margin-bottom: 1rem; /* Adjust margin for mobile brand */
+            }
+            .nav {
+                width: 100%;
+                flex-direction: column;
+                align-items: flex-start;
+                padding-top: 1rem;
+            }
+            .menu-link, .dropdown > button {
+                width: 100%;
+                text-align: left;
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+
+            /* Main dropdowns revert to full width and relative positioning for mobile */
+            .dropdown-content {
+                position: static !important; /* Override absolute for mobile */
+                width: 100%;
+                border-radius: 0;
+                box-shadow: none;
+                border-top: 1px solid #e2e8f0; /* Add a subtle divider */
+                padding-left: 1rem; /* Indent dropdown items */
+            }
+            /* Submenus also revert to full width and static positioning for mobile */
+            .submenu-content {
+                position: static !important; /* Override absolute for mobile */
+                width: 100%;
+                border-radius: 0;
+                box-shadow: none;
+                border-left: none; /* Remove left border */
+                border-top: 1px solid #e2e8f0; /* Add a subtle divider */
+                padding-left: 2rem; /* Further indent nested items */
+            }
+
+            .ph-caret-down, .ph-caret-right {
+                transform: rotate(0deg) !important; /* Reset rotation for mobile */
+            }
+            .menu-link[aria-expanded="true"] .ph-caret-down,
+            .submenu-trigger[aria-expanded="true"] .ph-caret-right {
+                transform: rotate(180deg) !important; /* Still rotate down for consistency in mobile dropdowns */
+            }
+        }
+
+        /* Form styling */
+        .form-container {
+            background-color: #ffffff;
+            padding: 2.5rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #334155; /* slate-700 */
+        }
+
+        .form-group input[type="text"],
+        .form-group input[type="number"],
+        .form-group input[type="date"], /* Added date input for styling */
+        .form-group select, /* Added select for styling */
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid #cbd5e1; /* slate-300 */
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            color: #475569; /* slate-700 */
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .form-group input[type="text"]:focus,
+        .form-group input[type="number"]:focus,
+        .form-group input[type="date"]:focus, /* Added date input for styling */
+        .form-group select:focus, /* Added select for styling */
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #16a34a; /* green-600 */
+            box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.2); /* green-600 with opacity */
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+        }
+
+        .radio-group div {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .radio-group input[type="radio"] {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            width: 1.25rem;
+            height: 1.25rem;
+            border: 2px solid #94a3b8; /* slate-400 */
+            border-radius: 50%;
+            outline: none;
+            cursor: pointer;
+            position: relative;
+            transition: border-color 0.2s ease;
+        }
+
+        .radio-group input[type="radio"]:checked {
+            border-color: #16a34a; /* green-600 */
+        }
+
+        .radio-group input[type="radio"]:checked::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 0.75rem;
+            height: 0.75rem;
+            background-color: #16a34a; /* green-600 */
+            border-radius: 50%;
+        }
+
+        .radio-group label {
+            margin-bottom: 0;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-top: 1.5rem;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            width: 1.25rem;
+            height: 1.25rem;
+            border: 2px solid #94a3b8; /* slate-400 */
+            border-radius: 0.375rem; /* rounded-md */
+            outline: none;
+            cursor: pointer;
+            position: relative;
+            transition: background-color 0.2s ease, border-color 0.2s ease;
+        }
+
+        .checkbox-group input[type="checkbox"]:checked {
+            background-color: #16a34a; /* green-600 */
+            border-color: #16a34a; /* green-600 */
+        }
+
+        .checkbox-group input[type="checkbox"]:checked::after {
+            content: '\2713'; /* Checkmark character */
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 0.875rem; /* text-sm */
+            font-weight: bold;
+        }
+
+        .checkbox-group label {
+            margin-bottom: 0;
+            cursor: pointer;
+            font-weight: 500;
+            color: #334155;
+        }
+
+        .btn-submit {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            width: 100%;
+            padding: 1rem 1.5rem;
+            background-color: #16a34a; /* green-600 */
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 1.125rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background-color 0.2s ease, transform 0.1s ease;
+            margin-top: 2rem;
+        }
+
+        .btn-submit:hover {
+            background-color: #15803d; /* green-700 */
+            transform: translateY(-1px);
+        }
+
+        .btn-submit:active {
+            transform: translateY(0);
+        }
+
+        .checklist-items-container {
+            border: 1px solid #e2e8f0; /* slate-200 */
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            background-color: #f8fafc; /* slate-50 */
+            margin-bottom: 1.5rem;
+        }
+
+        .checklist-item {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* Adjusted minmax for more fields */
+            gap: 1rem 1.5rem; /* Row gap, column gap */
+            align-items: flex-end;
+            border-bottom: 1px dashed #cbd5e1; /* slate-300 */
+            padding-bottom: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .checklist-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .checklist-item .form-group {
+            margin-bottom: 0; /* Remove bottom margin for groups within checklist items */
+        }
+
+        .btn-add-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background-color: #3b82f6; /* blue-500 */
+            color: white;
+            padding: 0.75rem 1.25rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            margin-bottom: 1.5rem;
+            border: none;
+        }
+
+        .btn-add-item:hover {
+            background-color: #2563eb; /* blue-600 */
+        }
+
+        .btn-remove-item {
+            background-color: #ef4444; /* red-500 */
+            color: white;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            border: none;
+            width: fit-content;
+            justify-self: end; /* Align to the end of its grid column */
+            white-space: nowrap;
+        }
+
+        .btn-remove-item:hover {
+            background-color: #dc2626; /* red-600 */
+        }
+
+        @media (max-width: 768px) {
+            .checklist-item {
+                grid-template-columns: 1fr;
+            }
+            .btn-remove-item {
+                width: 100%;
+                justify-self: stretch;
+            }
+        }
+
+        /* Plan List Section */
+        .plan-list-container {
+            background-color: #ffffff;
+            padding: 2.5rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            margin-top: 3rem;
+        }
+        .plan-list-item {
+            display: flex;
+            flex-direction: column;
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        .plan-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 0.5rem 1rem;
+            flex-grow: 1;
+        }
+        .plan-details span {
+            font-weight: 500;
+            color: #475569;
+        }
+        .plan-details strong {
+            color: #1e293b;
+        }
+        .plan-details .text-green-700 {
+            font-weight: 600;
+        }
+        .btn-action { /* Generic button for Edit/Integrate API */
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: white;
+            padding: 0.75rem 1.25rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            margin-top: 0; /* Adjusted for flex container */
+            border: none;
+        }
+        .btn-action.blue {
+            background-color: #3b82f6; /* blue-500 */
+        }
+        .btn-action.blue:hover {
+            background-color: #2563eb; /* blue-600 */
+        }
+        .btn-action.green {
+            background-color: #22c55e; /* green-500 */
+        }
+        .btn-action.green:hover {
+            background-color: #16a34a; /* green-600 */
+        }
+
+        /* Modal Specific Styles */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10001; /* Above other elements */
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .modal.open {
+            opacity: 1;
+            visibility: visible;
+        }
+        .modal-content {
+            background-color: #ffffff;
+            padding: 2.5rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            width: 90%;
+            max-width: 700px; /* Adjust max width for form modal */
+            max-height: 90vh; /* Limit height to prevent overflow */
+            overflow-y: auto; /* Enable scrolling for long forms */
+            position: relative;
+            transform: translateY(-20px);
+            transition: transform 0.3s ease;
+        }
+        .modal.open .modal-content {
+            transform: translateY(0);
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 1rem;
+        }
+        .modal-header h2 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #16a34a;
+        }
+        .modal-close-button {
+            background: none;
+            border: none;
+            font-size: 2rem;
+            cursor: pointer;
+            color: #64748b; /* slate-500 */
+            transition: color 0.2s ease;
+        }
+        .modal-close-button:hover {
+            color: #334155; /* slate-700 */
+        }
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-top: 2rem;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 1.5rem;
+        }
+        .btn-cancel {
+            background-color: #64748b; /* slate-500 */
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            border: none;
+        }
+        .btn-cancel:hover {
+            background-color: #475569; /* slate-700 */
+        }
+        .btn-save-modal {
+            background-color: #16a34a; /* green-600 */
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            border: none;
+        }
+        .btn-save-modal:hover {
+            background-color: #15803d; /* green-700 */
+        }
+    </style>
+</head>
+<body class="overflow-x-hidden">
+
+    <header class="bg-green-700 text-white p-4 flex flex-col md:flex-row items-center justify-between shadow-lg sticky top-0 z-50 rounded-b-xl">
+        <div class="font-extrabold text-3xl tracking-wider select-none mb-4 md:mb-0" tabindex="0">
+            <span class="text-white">BFM</span><span class="text-yellow-300"> FROTAS</span>
+        </div>
+
+        <nav class="flex flex-wrap gap-x-4 gap-y-2 items-center justify-center" role="navigation" aria-label="Menu principal">
+            <a href="dashboard.html" class="menu-link text-white font-semibold text-base py-2 px-2 relative whitespace-nowrap border-b-4 border-transparent hover:text-yellow-300 hover:border-yellow-300 transition">
+                Dashboard
+            </a>
+
+            <div class="relative dropdown" id="dropdown-configuracoes">
+                <button class="menu-link text-white font-semibold text-base py-2 px-2 active-menu hover:text-yellow-300 hover:border-yellow-300 border-b-4 border-transparent transition flex items-center gap-1" type="button" aria-haspopup="true" aria-expanded="false">
+                    Configurações <i class="ph ph-caret-down ml-1"></i>
+                </button>
+
+                <div id="menu-configuracoes" class="dropdown-content hidden absolute top-full left-0 bg-white rounded-xl shadow-xl min-w-[220px] z-[9999] flex-col">
+
+                    <div class="relative group" id="dropdown-veiculos-submenu">
+                        <button class="submenu-trigger" type="button" aria-haspopup="true" aria-expanded="false">
+                            Veículos
+                            <i class="ph ph-caret-right ml-2"></i>
+                        </button>
+
+                        <div id="menu-veiculos-submenu" class="submenu-content hidden">
+                            <a href="cadastroveiculos.html" class="dropdown-item">Cadastro de Veículos</a>
+                            <a href="cadastro_combustivel.html" class="dropdown-item">Cadastro de Combustível</a>
+                            <a href="cadastro_marcas.html" class="dropdown-item">Cadastro de Marcas</a>
+                            <a href="cadastro_modelo.html" class="dropdown-item">Cadastro de Modelo</a>
+                            <a href="anexosdocumentos.html" class="dropdown-item">Anexar Documento</a>
+                        </div>
+                    </div>
+                    <div class="relative group" id="dropdown-servicos-submenu">
+                        <button class="submenu-trigger" type="button" aria-haspopup="true" aria-expanded="false">
+                            Serviços
+                            <i class="ph ph-caret-right ml-2"></i>
+                        </button>
+
+                        <div id="menu-servicos-submenu" class="submenu-content hidden">
+                            <a href="cadastro-compartimentos.html" class="dropdown-item">Cadastro de Compartimentos</a>
+                            <a href="cadastro_acoes.html" class="dropdown-item">Cadastro de Ações</a>
+                        </div>
+                    </div>
+                    <a href="cadastro_tecnicos.html" class="dropdown-item">Cadastro de Técnicos</a>
+                    <a href="fornecedor.html" class="dropdown-item">Cadastro de Fornecedores</a>
+                    <a href="cadastro_periodicidade.html" class="dropdown-item">Cadastro de Periodicidade</a>
+                    <a href="oficinas.html" class="dropdown-item">Cadastro de Oficina</a>
+                    <a href="controlehodometrohorimetro.html" class="dropdown-item">Controle de Hodômetro/Horímetro</a>
+                </div>
+            </div>
+            <div class="relative dropdown" id="dropdown-plano">
+                <button class="menu-link text-white font-semibold text-base py-2 px-2 hover:text-yellow-300 hover:border-yellow-300 border-b-4 border-transparent transition flex items-center gap-1" type="button" aria-haspopup="true" aria-expanded="false">
+                    Plano de Manutenção <i class="ph ph-caret-down ml-1"></i>
+                </button>
+                <div id="menu-plano" class="dropdown-content hidden absolute top-full left-0 bg-white rounded-xl shadow-xl min-w-[220px] flex-col z-[9999]">
+                    <a href="pmp.html" class="dropdown-item">PMP - Preventiva</a>
+                    <a href="PL.html" class="dropdown-item">PL - Lubrificação</a>
+                    <a href="pmpr.html" class="dropdown-item">PMPR - Preditiva Programada</a>
+                    <a href="pi.html" class="dropdown-item">PI - Inspeção</a>
+                </div>
+            </div>
+
+            <div class="relative dropdown" id="dropdown-os">
+                <button class="menu-link text-white font-semibold text-base py-2 px-2 hover:text-yellow-300 hover:border-yellow-300 border-b-4 border-transparent transition flex items-center gap-1" type="button" aria-haspopup="true" aria-expanded="false">
+                    Ordem de Serviço <i class="ph ph-caret-down ml-1"></i>
+                </button>
+                <div id="menu-os" class="dropdown-content hidden absolute top-full left-0 bg-white rounded-xl shadow-xl min-w-[220px] flex-col z-[9999]">
+                    <a href="agendamento.html" class="dropdown-item">Gerar Ordem de Serviço</a>
+                </div>
+            </div>
+
+            <div class="relative dropdown" id="dropdown-gerenciamento">
+                <button class="menu-link text-white font-semibold text-base py-2 px-2 hover:text-yellow-300 hover:border-yellow-300 border-b-4 border-transparent transition flex items-center gap-1" type="button" aria-haspopup="true" aria-expanded="false">
+                    Gerenciamento <i class="ph ph-caret-down ml-1"></i>
+                </button>
+                <div id="menu-gerenciamento" class="dropdown-content hidden absolute top-full left-0 bg-white rounded-xl shadow-xl min-w-[220px] flex-col z-[9999]">
+                    <a href="controle.html" class="dropdown-item">Controle</a>
+                    <a href="visaodafrota.html" class="dropdown-item">Visão Geral de Frota</a>
+                </div>
+            </div>
+
+            <a href="seguranca.html" class="menu-link text-white font-semibold text-base py-2 px-2 hover:text-yellow-300 hover:border-yellow-300 border-b-4 border-transparent transition">
+                Segurança
+            </a>
+
+            <div class="relative dropdown" id="dropdown-alerts">
+                <button class="menu-link text-white font-semibold text-base py-2 px-2 hover:text-yellow-300 hover:border-yellow-300 border-b-4 border-transparent transition flex items-center gap-1" type="button" aria-haspopup="true" aria-expanded="false" id="alertBellButton">
+                    <i class="ph ph-bell text-xl"></i>
+                    <span id="alertCount" class="bg-red-500 text-white text-xs font-bold rounded-full px-2 py-1 -mt-4 -mr-4 absolute top-1/2 left-1/2 transform translate-x-1/4 -translate-y-1/4" style="display: none;">0</span>
+                </button>
+                <div id="alertDropdown" class="dropdown-content hidden absolute top-full right-0 bg-white rounded-xl shadow-xl min-w-[300px] flex-col z-[9999] p-4">
+                    <h3 class="text-lg font-bold text-gray-800 mb-2">Notificações</h3>
+                    <div id="alertList" class="text-gray-700">
+                        <p class="text-sm text-gray-500">Nenhum alerta no momento.</p>
+                    </div>
+                </div>
+            </div>
+
+            <a href="#" onclick="logout()" class="menu-link text-white font-semibold text-base py-2 px-2 hover:text-yellow-300 hover:border-yellow-300 border-b-4 border-transparent transition">
+                Sair
+            </a>
+        </nav>
+    </header>
+
+    <main class="flex-grow container mx-auto px-6 py-8">
+        <h1 class="text-4xl font-extrabold text-gray-900 mb-8">Cadastro de Periodicidade</h1>
+
+        <button id="addPeriodicidadeBtn" class="btn-action green mb-6">
+            <i class="ph ph-plus-circle text-lg"></i> Adicionar Nova Periodicidade
+        </button>
+
+        <div class="plan-list-container">
+            <h2 class="text-3xl font-bold text-gray-900 mb-6">Periodicidade Cadastrada</h2>
+            <div id="planList" class="space-y-4">
+                <p class="text-gray-500 text-center">Nenhuma periodicidade cadastrada ainda.</p>
+            </div>
+            <p id="noPlansMessage" class="text-gray-500 text-center hidden">Nenhuma periodicidade cadastrada ainda.</p>
+        </div>
+    </main>
+
+    <div id="periodicidadeModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="periodicidadeModalTitle" class="text-2xl font-bold text-green-700">Nova Periodicidade</h2>
+                <button type="button" class="modal-close-button" id="closePeriodicidadeModal">
+                    <i class="ph ph-x-circle"></i>
+                </button>
+            </div>
+            <form id="periodicidadeForm" class="space-y-6">
+                <div class="grid grid-cols-1 gap-6">
+                    <div class="form-group">
+                        <label for="tipoServico">Tipo de Serviço:</label>
+                        <input type="text" id="tipoServico" placeholder="Digite o tipo de serviço" class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Tipo de Periodicidade:</label>
+                    <div class="radio-group">
+                        <div>
+                            <input type="radio" id="baseKm" name="periodicidadeBase" value="km" checked>
+                            <label for="baseKm">KM</label>
+                        </div>
+                        <div>
+                            <input type="radio" id="baseTempo" name="periodicidadeBase" value="tempo">
+                            <label for="baseTempo">Tempo</label>
+                        </div>
+                        <div>
+                            <input type="radio" id="baseHorimetro" name="periodicidadeBase" value="horimetro">
+                            <label for="baseHorimetro">Horímetro</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="form-group">
+                        <label for="valorPeriodicidade">Qual valor da Periodicidade:</label>
+                        <input type="text" id="valorPeriodicidade" placeholder="Ex: 5000" class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="dataUltimaRevisao">Data da Última Revisão:</label>
+                        <input type="date" id="dataUltimaRevisao" class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" required>
+                    </div>
+                </div>
+
+                <div class="checklist-items-container" id="checklistItemsContainer">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">Itens da Checklist</h3>
+                    <p id="noChecklistItemsMessage" class="text-gray-500 text-center">Nenhum item adicionado ainda. Adicione um item para começar.</p>
+                </div>
+
+                <button type="button" id="addChecklistItemBtn" class="btn-add-item">
+                    <i class="ph ph-plus text-lg"></i> Adicionar Item à Checklist
+                </button>
+
+                <div class="modal-footer">
+                    <button type="button" id="cancelPeriodicidadeBtn" class="btn-cancel">Cancelar</button>
+                    <button type="submit" class="btn-save-modal">
+                        <i class="ph ph-floppy-disk text-xl"></i> Salvar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <div id="feedbackModal" class="modal">
+        <div class="modal-content text-center">
+            <h2 id="feedbackModalTitle" class="text-2xl font-bold mb-4 text-green-700">Sucesso!</h2>
+            <p id="feedbackModalMessage" class="text-gray-700 mb-6">Operação realizada com sucesso.</p>
+            <button id="feedbackModalClose" class="btn-submit !w-auto mx-auto bg-green-600 hover:bg-green-700">OK</button>
+        </div>
+    </div>
+
+    <div id="confirmModal" class="modal">
+        <div class="modal-content">
+            <h2 id="confirmModalTitle" class="text-2xl font-bold mb-4 text-red-600">Confirmar Exclusão</h2>
+            <p id="confirmModalMessage" class="text-gray-700 mb-6">Tem certeza que deseja excluir este item?</p>
+            <div class="modal-footer flex justify-end gap-4">
+                <button id="confirmModalNo" class="btn-cancel">Não</button>
+                <button id="confirmModalYes" class="btn-save-modal bg-red-600 hover:bg-red-700">Sim</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Header JavaScript (extracted from cadastro_tecnicos.html)
+            const dropdowns = document.querySelectorAll('.dropdown');
+            dropdowns.forEach(dropdown => {
+                const button = dropdown.querySelector('button[aria-haspopup="true"]');
+                const dropdownContent = dropdown.querySelector('.dropdown-content');
+                if (button && dropdownContent) {
+                    button.addEventListener('click', function(event) {
+                        event.stopPropagation(); // Prevent document click from immediately closing
+                        // Close other open dropdowns
+                        dropdowns.forEach(otherDropdown => {
+                            const otherDropdownContent = otherDropdown.querySelector('.dropdown-content');
+                            const otherButton = otherDropdown.querySelector('button[aria-haspopup="true"]');
+                            if (otherDropdown !== dropdown && otherDropdownContent && !otherDropdownContent.classList.contains('hidden')) {
+                                otherDropdownContent.classList.add('hidden');
+                                otherDropdownContent.classList.remove('animate-fade-in-down');
+                                if (otherButton) {
+                                    otherButton.setAttribute('aria-expanded', 'false');
+                                }
+                            }
+                        });
+                        // Toggle current dropdown
+                        dropdownContent.classList.toggle('hidden');
+                        dropdownContent.classList.toggle('animate-fade-in-down');
+                        button.setAttribute('aria-expanded', dropdownContent.classList.contains('hidden') ? 'false' : 'true');
+                        // Close any open submenus within this dropdown when its main menu is toggled
+                        const openSubmenus = dropdownContent.querySelectorAll('.submenu-content:not(.hidden)');
+                        openSubmenus.forEach(submenu => {
+                            submenu.classList.add('hidden');
+                            submenu.classList.remove('animate-fade-in-right');
+                            const submenuTrigger = submenu.previousElementSibling;
+                            if (submenuTrigger && submenuTrigger.hasAttribute('aria-expanded')) {
+                                submenuTrigger.setAttribute('aria-expanded', 'false');
+                            }
+                        });
+                    });
+                    // Prevent clicks inside the dropdown from closing it
+                    dropdownContent.addEventListener('click', function(event) {
+                        event.stopPropagation();
+                    });
+                }
+            });
+
+            // Close dropdowns when clicking outside
+            document.addEventListener('click', function(event) {
+                dropdowns.forEach(dropdown => {
+                    const dropdownContent = dropdown.querySelector('.dropdown-content');
+                    const button = dropdown.querySelector('button[aria-haspopup="true"]');
+                    // Check if the click was outside the dropdown button and content
+                    if (dropdownContent && button && !dropdown.contains(event.target)) {
+                        dropdownContent.classList.add('hidden');
+                        dropdownContent.classList.remove('animate-fade-in-down');
+                        button.setAttribute('aria-expanded', 'false');
+                    }
+                });
+            });
+
+            // Submenu logic
+            const submenuTriggers = document.querySelectorAll('.submenu-trigger');
+            submenuTriggers.forEach(trigger => {
+                const submenuContent = trigger.nextElementSibling; // The submenu content
+                if (submenuContent && submenuContent.classList.contains('submenu-content')) {
+                    trigger.addEventListener('click', function(event) {
+                        event.stopPropagation(); // Prevent parent dropdown from closing
+                        // Close other open submenus within the same parent dropdown
+                        const parentDropdownContent = trigger.closest('.dropdown-content');
+                        if (parentDropdownContent) {
+                            const openSubmenus = parentDropdownContent.querySelectorAll('.submenu-content:not(.hidden)');
+                            openSubmenus.forEach(submenu => {
+                                if (submenu !== submenuContent) { // Don't close self
+                                    submenu.classList.add('hidden');
+                                    submenu.classList.remove('animate-fade-in-right');
+                                    const submenuTrigger = submenu.previousElementSibling;
+                                    if (submenuTrigger && submenuTrigger.hasAttribute('aria-expanded')) {
+                                        submenuTrigger.setAttribute('aria-expanded', 'false');
+                                    }
+                                }
+                            });
+                        }
+
+                        // Toggle current submenu
+                        submenuContent.classList.toggle('hidden');
+                        submenuContent.classList.toggle('animate-fade-in-right');
+                        trigger.setAttribute('aria-expanded', submenuContent.classList.contains('hidden') ? 'false' : 'true');
+                    });
+                    // Prevent clicks inside the submenu from closing it
+                    submenuContent.addEventListener('click', function(event) {
+                        event.stopPropagation();
+                    });
+                }
+            });
+
+            // Alerts Dropdown (if applicable)
+            const alertBellButton = document.getElementById('alertBellButton');
+            const alertDropdown = document.getElementById('alertDropdown');
+            const alertCount = document.getElementById('alertCount');
+            const alertList = document.getElementById('alertList');
+
+            if (alertBellButton && alertDropdown) {
+                alertBellButton.addEventListener('click', function(event) {
+                    event.stopPropagation();
+                    alertDropdown.classList.toggle('hidden');
+                    if (!alertDropdown.classList.contains('hidden')) {
+                        loadAlerts(); // Load alerts when dropdown opens
+                    }
+                });
+            }
+
+            function loadAlerts() {
+                // In a real application, you would fetch alerts from a backend
+                // For this example, let's use dummy data
+                const alerts = [
+                    "Manutenção preventiva do Veículo ABC-1234 vence em 5 dias.",
+                    "Pneu do Veículo XYZ-5678 precisa de substituição."
+                ];
+
+                if (alerts.length > 0) {
+                    alertCount.textContent = alerts.length;
+                    alertCount.style.display = 'block';
+                    alertList.innerHTML = alerts.map(alert => `<p class="text-sm border-b border-gray-200 py-2 last:border-b-0">${alert}</p>`).join('');
+                } else {
+                    alertCount.style.display = 'none';
+                    alertList.innerHTML = '<p class="text-sm text-gray-500">Nenhum alerta no momento.</p>';
+                }
+            }
+
+            // Highlight active menu item based on current page
+            const currentPath = window.location.pathname.split('/').pop();
+            const menuLinks = document.querySelectorAll('.menu-link');
+            menuLinks.forEach(link => {
+                const href = link.getAttribute('href');
+                if (href && href.includes(currentPath) && currentPath !== '') {
+                    link.classList.add('active-menu');
+
+                    // If it's a dropdown item, ensure parent dropdowns are open/active
+                    let parentDropdownContent = link.closest('.dropdown-content');
+                    while (parentDropdownContent) {
+                        parentDropdownContent.classList.add('active'); // You might want a different class for 'open' state
+                        const parentButton = parentDropdownContent.previousElementSibling;
+                        if (parentButton) {
+                            parentButton.classList.add('active-menu'); // Highlight the parent menu item
+                            const parentCaret = parentButton.querySelector('.caret-icon'); // Assuming you have a caret-icon class
+                            if (parentCaret) {
+                                parentCaret.classList.add('rotate'); // Rotate caret if it exists
+                            }
+                            parentButton.setAttribute('aria-expanded', 'true');
+                        }
+                        parentDropdownContent = parentDropdownContent.closest('.dropdown-content');
+                    }
+                }
+            });
+
+            // Periodicidade Form and Modal Logic
+            const periodicidadeModal = document.getElementById('periodicidadeModal');
+            const periodicidadeModalTitle = document.getElementById('periodicidadeModalTitle');
+            const closePeriodicidadeModal = document.getElementById('closePeriodicidadeModal');
+            const cancelPeriodicidadeBtn = document.getElementById('cancelPeriodicidadeBtn');
+            const addPeriodicidadeBtn = document.getElementById('addPeriodicidadeBtn');
+
+            const periodicidadeForm = document.getElementById('periodicidadeForm');
+            const tipoServicoInput = document.getElementById('tipoServico');
+            const valorPeriodicidadeInput = document.getElementById('valorPeriodicidade');
+            const dataUltimaRevisaoInput = document.getElementById('dataUltimaRevisao');
+            const periodicidadeBaseRadios = document.querySelectorAll('input[name="periodicidadeBase"]');
+            const addChecklistItemBtn = document.getElementById('addChecklistItemBtn');
+            const checklistItemsContainer = document.getElementById('checklistItemsContainer');
+            const noChecklistItemsMessage = document.getElementById('noChecklistItemsMessage');
+            const planList = document.getElementById('planList');
+            const noPlansMessage = document.getElementById('noPlansMessage');
+
+            let periodicidades = JSON.parse(localStorage.getItem('periodicidades')) || [];
+            let checklistItemsCounter = 0;
+            let currentEditPlanId = null;
+
+            // Feedback Modal elements
+            const feedbackModal = document.getElementById('feedbackModal');
+            const feedbackModalTitle = document.getElementById('feedbackModalTitle');
+            const feedbackModalMessage = document.getElementById('feedbackModalMessage');
+            const feedbackModalClose = document.getElementById('feedbackModalClose');
+
+            // Confirm Modal elements
+            const confirmModal = document.getElementById('confirmModal');
+            const confirmModalTitle = document.getElementById('confirmModalTitle');
+            const confirmModalMessage = document.getElementById('confirmModalMessage');
+            const confirmModalNo = document.getElementById('confirmModalNo');
+            const confirmModalYes = document.getElementById('confirmModalYes');
+            let planIdToDelete = null;
+
+            function showFeedback(message, isSuccess = true) {
+                feedbackModalTitle.textContent = isSuccess ? 'Sucesso!' : 'Erro!';
+                feedbackModalTitle.classList.toggle('text-green-700', isSuccess);
+                feedbackModalTitle.classList.toggle('text-red-600', !isSuccess);
+                feedbackModalMessage.textContent = message;
+                feedbackModalClose.classList.toggle('bg-green-600', isSuccess);
+                feedbackModalClose.classList.toggle('hover:bg-green-700', isSuccess);
+                feedbackModalClose.classList.toggle('bg-red-600', !isSuccess);
+                feedbackModalClose.classList.toggle('hover:bg-red-700', !isSuccess);
+                feedbackModal.classList.add('open');
+            }
+
+            feedbackModalClose.addEventListener('click', () => {
+                feedbackModal.classList.remove('open');
+            });
+
+            function openPeriodicidadeModal() {
+                periodicidadeModal.classList.add('open');
+            }
+
+            function closePeriodicidadeModalFunc() {
+                periodicidadeModal.classList.remove('open');
+                periodicidadeForm.reset();
+                renderChecklistItems([]); // Clear checklist display when closing
+                currentEditPlanId = null;
+                updateValorPeriodicidadePlaceholder(); // Reset placeholder to default
+            }
+
+            closePeriodicidadeModal.addEventListener('click', closePeriodicidadeModalFunc);
+            cancelPeriodicidadeBtn.addEventListener('click', closePeriodicidadeModalFunc);
+
+            addPeriodicidadeBtn.addEventListener('click', () => {
+                periodicidadeModalTitle.textContent = 'Nova Periodicidade';
+                periodicidadeForm.reset();
+                document.getElementById('baseKm').checked = true; // Default to KM
+                renderChecklistItems([]);
+                currentEditPlanId = null;
+                updateValorPeriodicidadePlaceholder(); // Set placeholder based on default KM
+                openPeriodicidadeModal();
+            });
+
+            function closeConfirmModal() {
+                confirmModal.classList.remove('open');
+                planIdToDelete = null;
+            }
+
+            confirmModalNo.addEventListener('click', closeConfirmModal);
+
+            function updateValorPeriodicidadePlaceholder() {
+                const selectedBase = document.querySelector('input[name="periodicidadeBase"]:checked').value;
+                if (selectedBase === 'tempo') {
+                    valorPeriodicidadeInput.placeholder = 'Ex: 3 dias, 5 meses, 1 ano';
+                } else if (selectedBase === 'km') {
+                    valorPeriodicidadeInput.placeholder = 'Ex: 5000 KM';
+                } else if (selectedBase === 'horimetro') {
+                    valorPeriodicidadeInput.placeholder = 'Ex: 200 Horas';
+                }
+            }
+
+            // Listen for changes on periodicidade base radios
+            periodicidadeBaseRadios.forEach(radio => {
+                radio.addEventListener('change', updateValorPeriodicidadePlaceholder);
+            });
+
+            // Initial call to set the correct placeholder on load
+            updateValorPeriodicidadePlaceholder();
+
+            function renderChecklistItems(items = []) {
+                checklistItemsContainer.innerHTML = '';
+                if (items.length === 0) {
+                    noChecklistItemsMessage.classList.remove('hidden');
+                } else {
+                    noChecklistItemsMessage.classList.add('hidden');
+                    items.forEach((item, index) => {
+                        const itemDiv = document.createElement('div');
+                        itemDiv.className = 'checklist-item';
+                        itemDiv.dataset.id = item.id || `new-${index}`;
+                        itemDiv.innerHTML = `
+                            <div class="form-group">
+                                <label for="descricaoItem-${itemDiv.dataset.id}">Descrição do Item:</label>
+                                <input type="text" id="descricaoItem-${itemDiv.dataset.id}" class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" value="${item.description || ''}" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="periodicidadeItem-${itemDiv.dataset.id}">Periodicidade do Item:</label>
+                                <input type="text" id="periodicidadeItem-${itemDiv.dataset.id}" placeholder="Valor (Ex: 5000, 3 meses)" class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" value="${item.value || ''}" required>
+                            </div>
+                            <button type="button" class="btn-remove-item" data-id="${itemDiv.dataset.id}">
+                                <i class="ph ph-trash text-lg"></i> Remover
+                            </button>
+                        `;
+                        checklistItemsContainer.appendChild(itemDiv);
+                    });
+                    addRemoveItemListeners();
+                }
+            }
+
+            function addRemoveItemListeners() {
+                document.querySelectorAll('.btn-remove-item').forEach(button => {
+                    button.onclick = (event) => {
+                        const itemId = event.target.dataset.id || event.target.closest('.btn-remove-item').dataset.id;
+                        document.querySelector(`.checklist-item[data-id="${itemId}"]`).remove();
+                        if (checklistItemsContainer.children.length === 0) {
+                            noChecklistItemsMessage.classList.remove('hidden');
+                        }
+                    };
+                });
+            }
+
+            addChecklistItemBtn.addEventListener('click', () => {
+                checklistItemsCounter++;
+                renderChecklistItems([...getChecklistItemsFromForm(), { id: `new-${checklistItemsCounter}`, description: '', value: '' }]);
+            });
+
+            function getChecklistItemsFromForm() {
+                const items = [];
+                document.querySelectorAll('.checklist-item').forEach(itemDiv => {
+                    const id = itemDiv.dataset.id;
+                    const description = document.getElementById(`descricaoItem-${id}`).value;
+                    const value = document.getElementById(`periodicidadeItem-${id}`).value; // Get as string
+                    items.push({ id, description, value });
+                });
+                return items;
+            }
+
+            periodicidadeForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+
+                const tipoServico = tipoServicoInput.value.trim();
+                const periodicidadeBase = document.querySelector('input[name="periodicidadeBase"]:checked').value;
+                const valorPeriodicidade = valorPeriodicidadeInput.value.trim(); // Get as string
+                const dataUltimaRevisao = dataUltimaRevisaoInput.value; // Get value from date input
+                const checklist = getChecklistItemsFromForm();
+
+                if (checklist.length === 0) {
+                    showFeedback('Adicione pelo menos um item à checklist.', false);
+                    return;
+                }
+                if (!tipoServico) {
+                    showFeedback('O campo "Tipo de Serviço" não pode estar vazio.', false);
+                    return;
+                }
+                if (!valorPeriodicidade) {
+                    showFeedback('O campo "Qual valor da Periodicidade" não pode estar vazio.', false);
+                    return;
+                }
+                if (!dataUltimaRevisao) {
+                    showFeedback('O campo "Data da Última Revisão" não pode estar vazio.', false);
+                    return;
+                }
+
+                if (currentEditPlanId === null) {
+                    // Add new plan
+                    const newPlan = {
+                        id: Date.now(),
+                        tipoServico,
+                        periodicidadeBase,
+                        valorPeriodicidade,
+                        dataUltimaRevisao,
+                        checklist
+                    };
+                    periodicidades.push(newPlan);
+                    showFeedback('Periodicidade adicionada com sucesso!');
+                } else {
+                    // Update existing plan
+                    periodicidades = periodicidades.map(plan =>
+                        plan.id === currentEditPlanId ? { ...plan, tipoServico, periodicidadeBase, valorPeriodicidade, dataUltimaRevisao, checklist } : plan
+                    );
+                    showFeedback('Periodicidade atualizada com sucesso!');
+                    currentEditPlanId = null; // Reset edit mode
+                }
+
+                localStorage.setItem('periodicidades', JSON.stringify(periodicidades));
+                closePeriodicidadeModalFunc(); // Close modal after submission
+                renderPeriodicidades();
+            });
+
+            function renderPeriodicidades() {
+                planList.innerHTML = ''; // Clear list
+
+                const plansToDisplay = periodicidades;
+
+                if (plansToDisplay.length === 0) {
+                    noPlansMessage.classList.remove('hidden');
+                } else {
+                    noPlansMessage.classList.add('hidden');
+                    plansToDisplay.forEach(plan => {
+                        const planDiv = document.createElement('div');
+                        planDiv.className = 'plan-list-item';
+                        planDiv.innerHTML = `
+                            <div class="plan-details">
+                                <span><strong>Serviço:</strong> ${plan.tipoServico}</span>
+                                <span><strong>Tipo de Periodicidade:</strong> ${plan.periodicidadeBase.toUpperCase()}</span>
+                                <span><strong>Valor da Periodicidade:</strong> ${plan.valorPeriodicidade}</span>
+                                <span><strong>Última Revisão:</strong> ${new Date(plan.dataUltimaRevisao).toLocaleDateString('pt-BR')}</span>
+                                <div>
+                                    <strong>Itens da Checklist:</strong>
+                                    <ul class="list-disc list-inside text-sm text-gray-600 mt-1">
+                                        ${plan.checklist.map(item => `<li>${item.description} (${item.value})</li>`).join('')}
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="flex gap-2 mt-4">
+                                <button class="btn-action blue" onclick="editPlan(${plan.id})">
+                                    <i class="ph ph-pencil-simple text-lg"></i> Editar
+                                </button>
+                                <button class="btn-remove-item" onclick="confirmDeletePlan(${plan.id})">
+                                    <i class="ph ph-trash text-lg"></i> Excluir
+                                </button>
+                            </div>
+                        `;
+                        planList.appendChild(planDiv);
+                    });
+                }
+            }
+
+            window.editPlan = (id) => {
+                const planToEdit = periodicidades.find(plan => plan.id === id);
+                if (planToEdit) {
+                    periodicidadeModalTitle.textContent = 'Editar Periodicidade';
+                    tipoServicoInput.value = planToEdit.tipoServico;
+                    document.querySelector(`input[name="periodicidadeBase"][value="${planToEdit.periodicidadeBase}"]`).checked = true;
+                    updateValorPeriodicidadePlaceholder(); // Update placeholder based on selected base
+                    valorPeriodicidadeInput.value = planToEdit.valorPeriodicidade;
+                    dataUltimaRevisaoInput.value = planToEdit.dataUltimaRevisao;
+                    renderChecklistItems(planToEdit.checklist);
+                    currentEditPlanId = id;
+                    openPeriodicidadeModal();
+                }
+            };
+
+            window.confirmDeletePlan = (id) => {
+                planIdToDelete = id;
+                confirmModalTitle.textContent = 'Confirmar Exclusão';
+                confirmModalMessage.textContent = 'Tem certeza que deseja excluir esta periodicidade? Esta ação não pode ser desfeita.';
+                confirmModalYes.textContent = 'Sim, Excluir';
+                confirmModalYes.classList.remove('bg-green-600');
+                confirmModalYes.classList.add('bg-red-600');
+                confirmModal.classList.add('open'); // Ensure modal opens
+                confirmModalYes.onclick = deletePlan; // Re-assign handler to ensure it's correct
+            };
+
+            function deletePlan() {
+                if (planIdToDelete !== null) {
+                    periodicidades = periodicidades.filter(plan => plan.id !== planIdToDelete);
+                    localStorage.setItem('periodicidades', JSON.stringify(periodicidades));
+                    renderPeriodicidades();
+                    showFeedback('Periodicidade excluída com sucesso!');
+                    closeConfirmModal();
+                }
+            }
+
+            // Initial render on page load
+            renderPeriodicidades();
+
+            // Highlight active menu item based on current page
+            const navLinks = document.querySelectorAll('.menu-link');
+            navLinks.forEach(link => {
+                if (link.href === window.location.href.split('?')[0]) {
+                    link.classList.add('active-menu');
+                }
+            });
+        });
+
+        /**
+         * Alterna a visibilidade do menu mobile.
+         */
+        function toggleMobileMenu() {
+            const nav = document.querySelector('header nav');
+            nav.classList.toggle('active');
+        }
+
+        /**
+         * Função de logout.
+         */
+        function logout() {
+            localStorage.removeItem('logado');
+            window.location.href = 'login.html';
+        }
+    </script>
+</body>
+</html>
